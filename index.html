@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شركة العالمية - نظام الإدارة السحابي</title>
-    <!-- مكتبات Firebase السحابية -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -22,9 +21,7 @@
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); margin: 0; padding: 15px; direction: rtl; color: var(--text-color); transition: 0.3s; }
         .card { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); }
         .login-card { max-width: 420px; margin: 30px auto; background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid var(--gold); }
-        
         .brand-logo-badge { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
-
         .form-group { margin-bottom: 18px; text-align: right; }
         label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-color); }
         input, select { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 14px; background: var(--card-bg); color: var(--text-color); outline: none; }
@@ -54,14 +51,11 @@
 </head>
 <body data-theme="light">
 
-    <!-- شاشة تسجيل الدخول -->
     <div id="loginDiv" class="login-card">
         <div class="top-bar-actions" style="justify-content: flex-end; margin-bottom: 5px;">
             <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 النمط</button>
         </div>
-        
         <div class="brand-logo-badge"><i class="fas fa-globe"></i></div>
-        
         <h2 style="margin: 0 0 2px 0; font-size: 19px; color: var(--text-color);">شركة العالمية</h2>
         <span class="owner-badge">إدارة: الأستاذ بلال عبد الرزاق</span>
         <p style="color: var(--sub-text); font-size: 11px; margin: 10px 0 15px 0;">نظام الإدارة السحابي المباشر ($)</p>
@@ -85,7 +79,6 @@
         <button class="btn btn-gold" onclick="login()">تسجيل الدخول السحابي</button>
     </div>
 
-    <!-- لوحة التحكم الداخلية -->
     <div id="appDiv" class="card" style="display:none;">
         <div class="top-bar-actions">
             <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 تبديل النمط</button>
@@ -105,7 +98,6 @@
             </div>
         </div>
 
-        <!-- قسم الإدخال (خاص بالجابي) -->
         <div id="collectorSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
             <h3 style="margin-top:0; font-size:15px; color: var(--text-color);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة (تتحدث فوراً عند المدير)</h3>
             <div class="form-group">
@@ -127,12 +119,10 @@
             <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
-        <!-- لوحة المدير المتقدمة -->
         <div id="managerSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
             <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> كشوفات المبالغ بحوزة الجباة لحظياً ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
             
-            <!-- أداة الفلترة حسب الجابي للمدير -->
             <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
                 <div style="flex: 1; margin-bottom: 0;">
                     <label style="margin-bottom: 5px;"><i class="fas fa-filter"></i> فلتر عرض الجدول حسب الجابي:</label>
@@ -295,12 +285,6 @@
             let tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
             
-            if(records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مسجلة حالياً بالسحابة</td></tr>`;
-                if(role === 'manager') renderManagerSummary([], document.getElementById("filterCollector").value);
-                return;
-            }
-
             let selectedFilterCollector = document.getElementById("filterCollector") ? document.getElementById("filterCollector").value : "ALL";
 
             if(role === 'manager') {
@@ -315,7 +299,7 @@
             }
 
             if(displayedRecords.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مطابقة لهذا الجابي</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مطابقة مسجلة بالسحابة</td></tr>`;
                 return;
             }
 
@@ -350,7 +334,9 @@
             records.forEach(r => {
                 let col = r.collector;
                 if(r.status && r.status.includes('ملغي')) {
-                    alertHtml += `<p style="margin:5px 0;">⚠️ الوصل <b>${r.code}</b> للجابي <b>${r.collector}</b> أُلغي بسبب: <span style="color:var(--danger)">${r.status}</span></p>`;
+                    // إزالة كلمة "ملغي:" المتكررة لعرض السبب بنظافة مباشرة
+                    let cleanReason = r.status.replace('ملغي: ', '');
+                    alertHtml += `<p style="margin:5px 0;">⚠️ الوصل <b>${r.code}</b> للجابي <b>${r.collector}</b> (سبب الإلغاء: <span style="color:var(--danger)">${cleanReason}</span>)</p>`;
                 } else {
                     let amt = parseFloat(r.amount) || 0;
                     if(summaryData[col] !== undefined) {
@@ -360,7 +346,6 @@
                 }
             });
 
-            // إذا تم اختيار جابي محدد بالفلتر، نعرض مربعه فقط لتكون الشاشة مركزة عليه
             for(let colName in summaryData) {
                 if(filterCol !== "ALL" && filterCol !== colName) continue;
                 
