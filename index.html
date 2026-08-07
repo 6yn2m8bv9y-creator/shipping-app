@@ -1,78 +1,326 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#1a56db">
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:#f8fafc;color:#1f2937}
-#app{direction:rtl;max-width:480px;margin:0 auto;padding:16px;min-height:100vh}
-.s{display:none} .s.a{display:block}
-.h{text-align:center;padding:20px 0 12px}
-.h h1{font-size:22px;font-weight:600;color:#1e3a5f}
-.b{width:100%;padding:14px;border:none;border-radius:12px;font-size:16px;font-weight:600;cursor:pointer;margin:8px 0;box-shadow:0 1px 3px rgba(0,0,0,.1)}
-.bp{background:#1a56db;color:#fff} .bs{background:#fbbf24;color:#1f2937} .bd{background:#dc2626;color:#fff}
-.i{width:100%;padding:12px;border:1.5px solid #e5e7eb;border-radius:12px;font-size:16px;margin:8px 0;background:#fff}
-.c{background:#fff;border:1px solid #e5e7eb;border-radius:16px;padding:18px;margin:12px 0;box-shadow:0 1px 3px rgba(0,0,0,.05)}
-.ct{font-size:16px;font-weight:600;margin-bottom:10px;color:#1e3a5f;display:flex;justify-content:space-between;align-items:center}
-.cr{display:flex;justify-content:space-between;padding:7px 0;border-bottom:1px solid #f3f4f6;font-size:14px}
-.t{display:flex;gap:6px;margin-bottom:16px;overflow-x:auto;padding-bottom:4px}
-.x{padding:8px 14px;border-radius:10px;border:1.5px solid #e5e7eb;background:#fff;color:#6b7280;cursor:pointer;white-space:nowrap;font-size:13px;font-weight:500}
-.x.a{background:#1a56db;color:#fff;border-color:#1a56db}
-.g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
-.z{background:#fff;border:1px solid #e5e7eb;border-radius:14px;padding:18px;text-align:center}
-.zv{font-size:24px;font-weight:700;color:#1a56db}
-.zl{font-size:13px;color:#6b7280;margin-top:4px}
-.y{background:#d1fae5;color:#059669;padding:4px 12px;border-radius:8px;font-size:12px}
-.hi{display:none!important}
-select.i{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 14px center;padding-left:36px}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>نظام إدارة الشحن والحوالات - العالمية</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        :root {
+            --primary: #bf9b30; /* لون ذهبي مطابق للشعار */
+            --primary-dark: #9a7f27;
+            --success: #10b981;
+            --danger: #ef4444;
+            --bg-color: #f1f5f9;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+        }
+        .container {
+            max-width: 950px;
+            margin: auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        }
+        /* --- منطقة الشعار --- */
+        .logo-container {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f9fafb;
+            border-radius: 12px;
+        }
+        .logo-container img {
+            max-width: 180px; /* حجم مناسب للشعار */
+            height: auto;
+            filter: drop-shadow(0px 4px 6px rgba(0,0,0,0.2)); /* تأثير ظل للشعار */
+        }
+        .logo-title {
+            margin-top: 10px;
+            font-size: 22px;
+            font-weight: bold;
+            color: var(--primary);
+        }
+        .logo-subtitle {
+            font-size: 14px;
+            color: #64748b;
+        }
+        /* --- تبديل الصلاحيات --- */
+        .role-box {
+            background: #fffbeb;
+            padding: 15px 20px;
+            border-radius: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            border: 1px solid #fde68a;
+        }
+        .role-box select {
+            padding: 8px 15px;
+            border-radius: 8px;
+            border: 1px solid #fcd34d;
+            font-weight: bold;
+            background: white;
+            color: var(--primary-dark);
+        }
+        /* --- أقسام النموذج والجدول --- */
+        .form-section {
+            background: #f8fafc;
+            padding: 20px;
+            border-radius: 12px;
+            border: 1px solid #e2e8f0;
+            margin-bottom: 25px;
+        }
+        .form-section h3 {
+            margin-top: 0;
+            color: #334155;
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        input, select {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #cbd5e1;
+            font-size: 14px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(191, 155, 48, 0.1);
+        }
+        .btn {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        .btn-add { background-color: var(--success); color: white; width: 100%; }
+        .btn-add:hover { background-color: #059669; }
+        
+        .manager-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+        .btn-pdf { background-color: var(--primary); color: white; }
+        .btn-pdf:hover { background-color: var(--primary-dark); }
+        .btn-close { background-color: var(--danger); color: white; }
+        .btn-close:hover { background-color: #dc2626; }
+        .btn-wa { background-color: #25d366; color: white; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-wa:hover { background-color: #20ba5a; }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+        }
+        th, td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        th {
+            background-color: #f8fafc;
+            color: #475569;
+            font-weight: 600;
+        }
+        .status-green { color: var(--success); background: #ecfdf5; padding: 4px 10px; border-radius: 20px; display: inline-block; font-size: 13px; }
+        .status-red { color: var(--danger); background: #fef2f2; padding: 4px 10px; border-radius: 20px; display: inline-block; font-size: 13px; }
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 12px;
+            border-radius: 6px;
+            background: #e2e8f0;
+            border: none;
+            cursor: pointer;
+        }
+        .action-btn:hover { background: #cbd5e1; }
+    </style>
 </head>
 <body>
-<div id="app">
-<div id="lg" class="s a"><div class="h"><h1>🌍 العالمية للشحن الدولي</h1></div><div id="lo"><button class="b bp" onclick="sl('m')">👤 دخول كمدير</button><button class="b bs" onclick="sl('c')">🚚 دخول كجابي</button></div><div id="lf" class="hi"><div class="c"><div class="ct" id="lt">🔐 تسجيل الدخول</div><input type="password" id="pi" class="i" placeholder="أدخل الرمز" maxlength="6" inputmode="numeric"><button class="b bp" onclick="dl()">🔓 دخول</button></div></div></div>
+    <div class="container" id="reportArea">
+        <!-- منطقة الشعار الجديدة -->
+        <div class="logo-container">
+            <img src="image_1.png" alt="شعار العالمية">
+            <div class="logo-title">العالمية</div>
+            <div class="logo-subtitle">نظام إدارة الشحن والحوالات</div>
+        </div>
+        
+        <!-- صندوق تبديل الصلاحيات -->
+        <div class="role-box">
+            <span>نوع المستخدم الحالي:</span>
+            <select id="userRole" onchange="changeRole()">
+                <option value="collector">جابي</option>
+                <option value="manager">مدير</option>
+            </select>
+        </div>
+        
+        <!-- واجهة الجابي (الإدخال) -->
+        <div id="collectorInterface" class="form-section">
+            <h3>تسجيل حركة جديدة (وصل / مصروف / شحن)</h3>
+            <div class="form-grid">
+                <input type="text" id="itemName" placeholder="البيان (اسم المرسل أو الجهة)">
+                <input type="number" id="itemAmount" placeholder="المبلغ (ليرة / دج)">
+                <select id="itemType">
+                    <option value="حوالة">حوالة</option>
+                    <option value="مصروف">مصروف</option>
+                    <option value="شحن">شحن</option>
+                </select>
+            </div>
+            <button class="btn btn-add" onclick="addItem()">📥 إضافة للسجل وإرسال تنبيه للشركة</button>
+        </div>
 
-<div id="mg" class="s">
-<div class="h"><h1>📊 لوحة المدير</h1></div>
-<div class="t">
-<div class="x a" onclick="st('o',this)">👥 الجابيين</div><div class="x" onclick="st('a',this)">📋 الوصولات</div>
-<div class="x" onclick="st('c',this)">❌ الملغية</div><div class="x" onclick="st('r',this)">📈 التقارير</div>
-</div>
-<div id="to">
-<div class="c"><div class="ct">➕ إضافة جابي</div><input type="text" id="ncn" class="i" placeholder="اسم الجابي"><input type="password" id="ncp" class="i" placeholder="الرمز (4-6 أرقام)" maxlength="6" inputmode="numeric"><button class="b bp" onclick="ac()">إضافة</button></div>
-<div id="cl"></div>
-</div>
-<div id="ta" class="hi">
-<div class="c"><select id="filterC" class="i" onchange="ra()"><option value="الكل">👤 عرض كل الجابيين</option></select></div>
-<div class="g"><div class="z"><div class="zv" id="stt">0</div><div class="zl">الوصولات</div></div><div class="z"><div class="zv" id="sta">0$</div><div class="zl">المقبوض</div></div></div>
-<div id="ar"></div>
-</div>
-<div id="tc" class="hi"><div id="cc"></div></div>
-<div id="tr" class="hi"><div id="rc"></div></div>
-<button class="b bd" onclick="lo()" style="margin-top:24px">🚪 تسجيل الخروج</button>
-</div>
+        <!-- لوحة تحكم المدير -->
+        <div id="managerInterface" style="display:none;" class="form-section">
+            <h3>لوحة تحكم المدير والتقارير</h3>
+            <div class="manager-actions">
+                <button class="btn btn-pdf" onclick="generatePDF()">📥 تصدير التقرير PDF</button>
+                <button class="btn btn-close" onclick="closeBox()">🔒 إغلاق الصندوق (أرشفة يومية)</button>
+                <a id="whatsappLink" href="#" target="_blank" class="btn btn-wa">💬 إرسال التقرير عبر واتساب</a>
+            </div>
+        </div>
 
-<div id="cg" class="s"><div class="h"><h1 id="cn">🚚 جابي</h1></div><div class="c"><div class="ct">📝 وصل جديد</div><select id="rt" class="i" onchange="tt()"><option value="s">📦 شحن</option><option value="t">💱 حوالة</option><option value="e">💰 مصاريف</option></select><input type="text" id="cu" class="i" placeholder="👤 اسم الزبون"><div id="sf"><input type="number" id="sa" class="i" placeholder="💵 المبلغ ($)"></div><div id="tf" class="hi"><input type="number" id="ta2" class="i" placeholder="💱 قيمة الحوالة ($)" oninput="cf()"></div><div id="ef" class="hi"><input type="text" id="er" class="i" placeholder="📝 سبب المصاريف"><input type="number" id="ea" class="i" placeholder="💰 المبلغ ($)"></div><button class="b bp" onclick="cr()">✅ إنشاء</button></div><div id="rp"></div><button class="b bd" onclick="lo()">🚪 خروج</button></div>
-</div>
+        <h3>سجل العمليات والتقارير اليومية</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>النوع</th>
+                    <th>البيان</th>
+                    <th>المبلغ</th>
+                    <th>حالة القبض</th>
+                    <th>التاريخ والوقت</th>
+                    <th>الإجراء (للمدير)</th>
+                </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+        </table>
+    </div>
 
-<script>
-(function(){
-var G={get:k=>JSON.parse(localStorage.getItem('g_'+k)),set:(k,v)=>localStorage.setItem('g_'+k,JSON.stringify(v))};
-if(!G.get('r'))G.set('r',[]); if(!G.get('u'))G.set('u',{m:{p:'1234'},o:[{n:'جابي 1',p:'1111'}]});
-var U=null,L=null;
-window.sl=t=>{L=t;document.getElementById('lo').classList.add('hi');document.getElementById('lf').classList.remove('hi');document.getElementById('lt').textContent=t==='m'?'🔐 مدير':'🔐 جابي'};
-window.dl=()=>{var p=document.getElementById('pi').value,u=G.get('u');if(L==='m'&&p===u.m.p){document.getElementById('mg').classList.add('a');document.getElementById('lg').classList.remove('a');ro();updF()}else if(L==='c'){var c=u.o.find(x=>x.p===p);if(c){U=c;document.getElementById('cn').textContent='🚚 '+c.n;document.getElementById('cg').classList.add('a');document.getElementById('lg').classList.remove('a')}}}
-window.lo=()=>location.reload();
-window.st=(t,el)=>{document.querySelectorAll('#mg .x').forEach(x=>x.classList.remove('a'));el.classList.add('a');['to','ta','tc','tr'].forEach(x=>document.getElementById('t'+x).classList.add('hi'));document.getElementById('t'+t).classList.remove('hi')};
-function ro(){var u=G.get('u'),d=document.getElementById('cl');d.innerHTML=u.o.map((c,i)=>`<div class="c"><div class="ct">👤 ${c.n}</div><div class="cr"><span>الرمز:</span><b>${c.p}</b></div></div>`).join('')}
-window.ac=()=>{var n=document.getElementById('ncn').value.trim(),p=document.getElementById('ncp').value.trim();if(!n||!p)return;var u=G.get('u');u.o.push({n,p});G.set('u',u);ro();updF();alert('✅ تمت الإضافة!')}
-function updF(){var s=document.getElementById('filterC');s.innerHTML='<option value="الكل">👤 عرض كل الجابيين</option>'+G.get('u').o.o.map(x=>`<option value="${x.n}">${x.n}</option>`).join('')}
-window.ra=()=>{var r=G.get('r'),f=document.getElementById('filterC').value;if(f!=='الكل')r=r.filter(x=>x.cn===f);r=r.filter(x=>x.st==='a').sort((a,b)=>b.id-a.id);var inc=r.filter(x=>x.t!=='e').reduce((s,x)=>s+x.am,0);document.getElementById('stt').textContent=r.length;document.getElementById('sta').textContent=inc+'$';document.getElementById('ar').innerHTML=r.map(x=>`<div class="c"><div class="ct"><span>📄 ${x.rn}</span><span class="y">${x.cn}</span></div><div class="cr"><span>الزبون:</span><b>${x.cu}</b></div><div class="cr"><span>المبلغ:</span><b>${x.am}$</b></div></div>`).join('')}
-window.tt=()=>{var t=document.getElementById('rt').value;document.getElementById('sf').classList.toggle('hi',t!=='s');document.getElementById('tf').classList.toggle('hi',t!=='t');document.getElementById('ef').classList.toggle('hi',t!=='e')};
-window.cf=()=>{var a=parseFloat(document.getElementById('ta2').value)||0;document.getElementById('stt').textContent=a+ (a>200?3:a>100?2:1)};
-window.cr=()=>{var t=document.getElementById('rt').value,cn=document.getElementById('cu').value.trim(),am=parseFloat(document.getElementById('sa').value)||0;var r=G.get('r');r.push({id:Date.now(),rn:'A-'+Date.now(),t,cu:cn,cn:U.n,am,st:'a'});G.set('r',r);alert('✅ تم!')};
-})();
-</script>
+    <script>
+        function getRole() {
+            return document.getElementById('userRole').value;
+        }
+
+        function changeRole() {
+            const role = getRole();
+            const managerUI = document.getElementById('managerInterface');
+            const collectorUI = document.getElementById('collectorInterface');
+            
+            if (role === 'manager') {
+                managerUI.style.display = 'block';
+                collectorUI.style.display = 'none';
+            } else {
+                managerUI.style.display = 'none';
+                collectorUI.style.display = 'block';
+            }
+            renderTable();
+        }
+
+        function addItem() {
+            const name = document.getElementById('itemName').value.trim();
+            const amount = document.getElementById('itemAmount').value.trim();
+            const type = document.getElementById('itemType').value;
+            const date = new Date().toLocaleString('ar-EG');
+            
+            if(!name || !amount) {
+                alert('الرجاء إدخال البيان والمبلغ بشكل صحيح.');
+                return;
+            }
+
+            let data = JSON.parse(localStorage.getItem('shipData') || '[]');
+            data.push({name, amount, type, status: 'غير مقبوض', date});
+            localStorage.setItem('shipData', JSON.stringify(data));
+            
+            alert('تم تسجيل الحركة بنجاح وإرسال تنبيه لرقم الشركة!');
+            
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemAmount').value = '';
+            renderTable();
+        }
+
+        function toggleStatus(index) {
+            if (getRole() !== 'manager') {
+                alert('عذراً، صلاحيات الجابي لا تسمح بتغيير حالة القبض.');
+                return;
+            }
+            let data = JSON.parse(localStorage.getItem('shipData') || '[]');
+            data[index].status = data[index].status === 'مقبوض' ? 'غير مقبوض' : 'مقبوض';
+            localStorage.setItem('shipData', JSON.stringify(data));
+            renderTable();
+        }
+
+        function renderTable() {
+            const body = document.getElementById('tableBody');
+            const data = JSON.parse(localStorage.getItem('shipData') || '[]');
+            const role = getRole();
+
+            if (data.length === 0) {
+                body.innerHTML = `<tr><td colspan="6" style="color: #94a3b8; padding: 20px;">لا توجد حركات مسجلة حتى الآن</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = data.map((item, index) => `
+                <tr>
+                    <td><strong>${item.type}</strong></td>
+                    <td>${item.name}</td>
+                    <td>${item.amount}</td>
+                    <td><span class="${item.status === 'مقبوض' ? 'status-green' : 'status-red'}">${item.status}</span></td>
+                    <td style="font-size: 13px; color: #64748b;">${item.date}</td>
+                    <td>
+                        ${role === 'manager' ? `<button class="action-btn" onclick="toggleStatus(${index})">تغيير الحالة</button>` : '<span style="color:#cbd5e1; font-size:12px;">للمدير فقط</span>'}
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function generatePDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            html2canvas(document.getElementById('reportArea')).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                doc.addImage(imgData, 'PNG', 10, 10, 190, 170);
+                doc.save('تقرير_العالمية_' + new Date().toLocaleDateString('ar-EG') + '.pdf');
+            });
+        }
+
+        function closeBox() {
+            if(confirm('هل أنت متأكد من إغلاق الصندوق وتصفير الأرشيف اليومي؟')) {
+                localStorage.removeItem('shipData');
+                renderTable();
+                alert('تم إغلاق الصندوق وأرشفة اليومية بنجاح.');
+            }
+        }
+
+        document.getElementById('whatsappLink').href = "https://wa.me/963999999999?text=" + encodeURIComponent("مرحباً، مرفق تقرير حركة الحوالات والمصاريف والشحن اليومي من شركة العالمية.");
+
+        renderTable();
+    </script>
 </body>
 </html>
