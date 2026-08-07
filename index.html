@@ -8,93 +8,112 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         :root {
-            --primary: #b8860b;
-            --primary-dark: #996f08;
-            --success: #28a745;
-            --danger: #dc3545;
-            --bg: #f4f6f9;
+            --gold: #d4af37;
+            --gold-dark: #aa820a;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --danger: #ef4444;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg); margin: 0; padding: 20px; direction: rtl; color: #333; }
-        .card { max-width: 900px; margin: auto; background: white; padding: 30px; border-radius: 14px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .login-card { max-width: 420px; margin: 60px auto; background: white; padding: 35px; border-radius: 14px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        h2, h3 { color: var(--primary); text-align: center; }
-        .form-group { margin-bottom: 15px; text-align: right; }
-        label { display: block; font-weight: bold; margin-bottom: 5px; font-size: 13px; color: #555; }
-        input, select { width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: 8px; box-sizing: border-box; font-size: 14px; }
-        button { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 8px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; transition: 0.2s; }
-        button:hover { background: var(--primary-dark); }
-        .btn-logout { background: var(--danger); width: auto; padding: 6px 15px; float: left; font-size: 13px; border-radius: 6px; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); margin: 0; padding: 20px; direction: rtl; color: var(--dark); }
+        .card { max-width: 950px; margin: auto; background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
         
-        /* خيارات تسجيل الدخول الثابتة */
+        /* شاشة تسجيل الدخول */
+        .login-card { max-width: 420px; margin: 50px auto; background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 5px solid var(--gold); }
+        .logo-img { width: 120px; height: auto; margin-bottom: 15px; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.15)); }
+        .login-card h2 { color: var(--gold-dark); margin: 5px 0; font-size: 24px; }
+        .login-card p { color: #64748b; font-size: 13px; margin-bottom: 25px; }
+
+        .form-group { margin-bottom: 18px; text-align: right; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #475569; }
+        input, select { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 14px; background: #fff; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--gold); outline: none; box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.15); }
+        
+        .btn { background: linear-gradient(135deg, #d4af37, #aa820a); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; transition: 0.2s; box-shadow: 0 4px 12px rgba(170,130,10,0.2); }
+        .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .btn-logout { background: #fee2e2; color: #dc2626; width: auto; padding: 8px 16px; float: left; font-size: 13px; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
+        
         .login-options { display: flex; gap: 10px; margin-bottom: 20px; }
-        .login-opt-btn { background: #f1f3f5; color: #333; border: 1px solid #ced4da; padding: 10px; border-radius: 8px; cursor: pointer; font-weight: bold; flex: 1; }
-        .login-opt-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .login-opt-btn { background: #f1f5f9; color: #475569; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; flex: 1; transition: 0.2s; }
+        .login-opt-btn.active { background: var(--gold); color: white; border-color: var(--gold); box-shadow: 0 4px 12px rgba(212,175,55,0.2); }
 
-        /* صندوق ملخص الخزينة للمدير */
-        .summary-box { background: #fff8e1; border: 1px solid #ffe0b2; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-around; text-align: center; }
-        .summary-item h4 { margin: 0; color: #b8860b; font-size: 14px; }
-        .summary-item p { margin: 5px 0 0 0; font-size: 18px; font-weight: bold; color: #333; }
+        /* صندوق ملخص المدير */
+        .summary-box { background: #fffbeb; border: 1px solid #fef3c7; padding: 20px; border-radius: 14px; margin-bottom: 25px; display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; gap: 15px; }
+        .summary-item h4 { margin: 0; color: #92400e; font-size: 13px; font-weight: 600; }
+        .summary-item p { margin: 8px 0 0 0; font-size: 20px; font-weight: bold; color: #1e293b; }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 8px; overflow: hidden; }
-        th, td { border: 1px solid #e9ecef; padding: 12px; text-align: center; font-size: 14px; }
-        th { background: #f8f9fa; color: #495057; font-weight: 600; }
-        .green { color: var(--success); font-weight: bold; background: #e8f5e9; padding: 4px 10px; border-radius: 20px; display: inline-block; }
-        .red { color: var(--danger); font-weight: bold; background: #ffebee; padding: 4px 10px; border-radius: 20px; display: inline-block; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; border-radius: 10px; overflow: hidden; background: white; }
+        th, td { border: 1px solid #f1f5f9; padding: 14px; text-align: center; font-size: 14px; }
+        th { background: #f8fafc; color: #475569; font-weight: 600; }
+        
+        .badge-green { color: var(--success); background: #ecfdf5; padding: 5px 12px; border-radius: 20px; display: inline-block; font-weight: 600; font-size: 12px; }
+        .badge-red { color: var(--danger); background: #fef2f2; padding: 5px 12px; border-radius: 20px; display: inline-block; font-weight: 600; font-size: 12px; }
+        
+        .header-flex { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px; }
+        .app-title { display: flex; align-items: center; gap: 15px; }
+        .app-title img { width: 50px; height: auto; }
+        .app-title h2 { margin: 0; color: var(--gold-dark); font-size: 22px; }
     </style>
 </head>
 <body>
 
     <!-- شاشة تسجيل الدخول -->
     <div id="loginDiv" class="login-card">
-        <h2> شركة العالمية </h2>
-        <p style="color: #666; font-size: 13px; margin-bottom: 20px;">نظام إدارة الشحن والحوالات والقبض اليومي</p>
+        <img src="image_2.png" class="logo-img" alt="شعار العالمية">
+        <h2>شركة العالمية</h2>
+        <p>نظام إدارة الشحن والحوالات والقبض اليومي</p>
         
-        <label>اختر صفة الدخول:</label>
         <div class="login-options">
-            <button type="button" class="login-opt-btn active" id="btnManager" onclick="setLoginType('manager')">⚙️ مدير</button>
-            <button type="button" class="login-opt-btn" id="btnCollector" onclick="setLoginType('collector')">💵 جابي</button>
+            <button type="button" class="login-opt-btn active" id="btnManager" onclick="setLoginType('manager')">⚙️ مدير النظام</button>
+            <button type="button" class="login-opt-btn" id="btnCollector" onclick="setLoginType('collector')">💵 جابي ميداني</button>
         </div>
 
         <div class="form-group">
             <input type="password" id="password" placeholder="أدخل كلمة المرور..." onkeydown="if(event.key === 'Enter') login()">
         </div>
         
-        <button onclick="login()">🔓 تسجيـل الدخـول</button>
-        <p style="font-size: 11px; color: #888; margin-top: 15px;">كلمة مرور المدير: <b>admin123</b><br>كلمة مرور الجابي: <b>collector123</b></p>
+        <button class="btn" onclick="login()">🔓 تسجيل الدخول</button>
     </div>
 
     <!-- لوحة التحكم الرئيسية -->
     <div id="appDiv" class="card" style="display:none;">
-        <button class="btn-logout" onclick="logout()">🚪 خروج</button>
-        <h2>شركة العالمية - لوحة التحكم</h2>
-        <p id="userRoleText" style="text-align:center; font-weight:bold; color:#555; margin-bottom: 20px;"></p>
+        <div class="header-flex">
+            <div class="app-title">
+                <img src="image_2.png" alt="شعار العالمية">
+                <div>
+                    <h2>شركة العالمية</h2>
+                    <span id="userRoleText" style="font-size: 13px; color: #64748b; font-weight: 600;"></span>
+                </div>
+            </div>
+            <button class="btn-logout" onclick="logout()">🚪 خروج</button>
+        </div>
 
-        <!-- لوحة ملخص المدير (قديش مع الجابي) -->
+        <!-- لوحة ملخص المدير -->
         <div id="managerSummary" class="summary-box" style="display:none;">
             <div class="summary-item">
-                <h4>📥 إجمالي الحوالات والشحن المقبوضة</h4>
+                <h4>📥 إجمالي الحوالات والشحن</h4>
                 <p id="totalCollected">0</p>
             </div>
             <div class="summary-item">
-                <h4>📤 إجمالي المصاريف</h4>
+                <h4>📤 إجمالي المصاريف المسجلة</h4>
                 <p id="totalExpenses">0</p>
             </div>
-            <div class="summary-item" style="border-right: 1px solid #ffe0b2; padding-right: 20px;">
-                <h4>💰 الصندوق الصافي (المبلغ مع الجابي)</h4>
-                <p id="netWithCollector" style="color: #28a745;">0</p>
+            <div class="summary-item">
+                <h4>💰 الصافي (المبلغ مع الجابي)</h4>
+                <p id="netWithCollector" style="color: var(--success);">0</p>
             </div>
         </div>
 
         <!-- قسم الإدخال (للجابي والمدير) -->
-        <div id="collectorSection" style="background: #fdfcf7; padding: 20px; border-radius: 10px; border: 1px solid #faebd7; margin-bottom: 25px;">
-            <h3 style="margin-top:0; font-size:16px;">📥 تسجيل حركة جديدة (مقبوضة حكماً)</h3>
+        <div id="collectorSection" style="background: #fafaf9; padding: 25px; border-radius: 14px; border: 1px solid #e2e8f0; margin-bottom: 25px;">
+            <h3 style="margin-top:0; font-size:16px; color: var(--gold-dark); margin-bottom: 15px;">📥 تسجيل حركة جديدة في الصندوق</h3>
             
             <div class="form-group">
                 <label>نوع الحركة:</label>
                 <select id="type" onchange="toggleFields()">
-                    <option value="حوالة">حوالة</option>
-                    <option value="شحن">شحن</option>
-                    <option value="مصروف">مصروف (دفعة مصروف)</option>
+                    <option value="حوالة">حوالة مالية</option>
+                    <option value="شحن">إيراد شحن</option>
+                    <option value="مصروف">مصروف (دفعة نقدية)</option>
                 </select>
             </div>
 
@@ -104,28 +123,28 @@
             </div>
 
             <div class="form-group">
-                <label>المبلغ (تم قبضه):</label>
+                <label>المبلغ:</label>
                 <input type="number" id="amount" placeholder="أدخل المبلغ بالأرقام...">
             </div>
 
-            <button onclick="addData()">✅ حفظ الحركة وتثبيت الوصل</button>
+            <button class="btn" onclick="addData()">✅ حفظ وإصدار السند فوراً</button>
         </div>
 
         <!-- أزرار المدير الإضافية -->
-        <div id="managerSection" style="display:none; margin-bottom: 20px; text-align: center; display: flex; gap: 10px; justify-content: center;">
-            <button onclick="exportPDF()" style="background: #007bff; width: auto;">📄 تصدير تقرير PDF احترافي</button>
-            <button onclick="closeBox()" style="background: #28a745; width: auto;">🔒 إغلاق الصندوق (أرشفة يومية)</button>
-            <a id="waBtn" href="#" target="_blank" style="display:inline-block; background:#25d366; color:white; padding:12px 20px; border-radius:8px; text-decoration:none; font-weight:bold; font-size:15px; line-height: normal;">💬 إرسال التقرير للواتساب</a>
+        <div id="managerSection" style="display:none; margin-bottom: 25px; gap: 12px; justify-content: center; display: flex; flex-wrap: wrap;">
+            <button class="btn" onclick="exportPDF()" style="background: #0284c7; width: auto;">📄 تصدير تقرير PDF احترافي</button>
+            <button class="btn" onclick="closeBox()" style="background: #16a34a; width: auto;">🔒 إغلاق الصندوق والأرشفة اليومية</button>
+            <a id="waBtn" href="#" target="_blank" style="display:inline-flex; align-items:center; background:#25d366; color:white; padding:12px 20px; border-radius:10px; text-decoration:none; font-weight:bold; font-size:15px; box-shadow: 0 4px 12px rgba(37,211,102,0.2);">💬 إرسال التقرير للواتساب</a>
         </div>
 
-        <h3>📋 السجلات والتقارير اليومية</h3>
+        <h3 style="color: var(--dark); font-size: 18px; margin-bottom: 10px;">📋 السجلات والتقارير اليومية</h3>
         <table>
             <thead>
                 <tr>
                     <th>النوع</th>
                     <th>البيان / السبب</th>
                     <th>المبلغ</th>
-                    <th>حالة القبض</th>
+                    <th>الحالة</th>
                     <th>التاريخ والوقت</th>
                     <th>إجراء المدير</th>
                 </tr>
@@ -136,7 +155,7 @@
 
     <script>
         let currentRole = "";
-        let selectedLoginType = "manager"; // الافتراضي مدير
+        let selectedLoginType = "manager";
 
         function setLoginType(type) {
             selectedLoginType = type;
@@ -157,7 +176,7 @@
             } else if (selectedLoginType === "collector" && p === "collector123") {
                 currentRole = "collector";
             } else {
-                alert("كلمة المرور غير صحيحة لهذا الخيار!");
+                alert("كلمة المرور غير صحيحة!");
                 return;
             }
 
@@ -165,11 +184,11 @@
             document.getElementById("appDiv").style.display = "block";
 
             if (currentRole === "manager") {
-                document.getElementById("userRoleText").innerText = "👤 الصلاحية الحالية: المدير العام";
+                document.getElementById("userRoleText").innerText = "المدير العام";
                 document.getElementById("managerSection").style.display = "flex";
-                document.getElementById("managerSummary").style.display = "flex";
+                document.getElementById("managerSummary").style.display = "grid";
             } else {
-                document.getElementById("userRoleText").innerText = "👤 الصلاحية الحالية: جابي الميدان";
+                document.getElementById("userRoleText").innerText = "جابي الميدان";
                 document.getElementById("managerSection").style.display = "none";
                 document.getElementById("managerSummary").style.display = "none";
             }
@@ -189,8 +208,8 @@
             let clientNameInput = document.getElementById("clientName");
             
             if (type === "مصروف") {
-                nameLabel.innerText = "سبب المصروف (مثال: أجور نقل، ضيافة...):";
-                clientNameInput.placeholder = "أدخل سبب المصروف بالتفصيل...";
+                nameLabel.innerText = "سبب المصروف (أجور نقل، ضيافة، مستلزمات...):";
+                clientNameInput.placeholder = "أدخل سبب صرف المبلغ بالتفصيل...";
             } else {
                 nameLabel.innerText = "اسم الزبون (المرسل / المستلم):";
                 clientNameInput.placeholder = "أدخل اسم الزبون كاملاً...";
@@ -204,12 +223,12 @@
             let date = new Date().toLocaleString('ar-EG');
 
             if (!name || !amount) {
-                alert("الرجاء إدخال اسم الزبون (أو سبب المصروف) والمبلغ بشكل دقيق!");
+                alert("الرجاء إدخال البيان والمبلغ بشكل دقيق!");
                 return;
             }
 
             let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            // حالة القبض ثابتة ومقومة حكماً "مقبوض" لأن أي وصل يعطيه الجابي يقابله استلام مبلغ فوري
+            // حالة القبض ثابتة "مقبوض" فوراً عند إصدار الوصل
             records.push({ name, amount, type, status: "مقبوض", date });
             localStorage.setItem("shippData", JSON.stringify(records));
 
@@ -219,10 +238,16 @@
             loadTable();
         }
 
-        function toggleStatus(index) {
+        function cancelRecord(index) {
             if (currentRole !== "manager") return;
+            let reason = prompt("الرجاء إدخال سبب إلغاء هذا الوصل:");
+            if (!reason) {
+                alert("يجب إدخال سبب لإلغاء الوصل!");
+                return;
+            }
+
             let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            records[index].status = records[index].status === "مقبوض" ? "غير مقبوض" : "مقبوض";
+            records[index].status = "ملغي (سبب: " + reason + ")";
             localStorage.setItem("shippData", JSON.stringify(records));
             loadTable();
         }
@@ -236,14 +261,18 @@
             let totalExp = 0;
 
             if (records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="6" style="color:#777; padding: 20px;">لا توجد حركات مسجلة حتى الآن</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="color:#94a3b8; padding: 25px;">لا توجد حركات مسجلة حتى الآن</td></tr>`;
             } else {
                 records.forEach((item, index) => {
                     let amt = parseFloat(item.amount) || 0;
-                    if (item.type === "مصروف") {
-                        if (item.status === "مقبوض") totalExp += amt;
-                    } else {
-                        if (item.status === "مقبوض") totalCol += amt;
+                    let isCanceled = item.status.startsWith("ملغي");
+
+                    if (!isCanceled) {
+                        if (item.type === "مصروف") {
+                            totalExp += amt;
+                        } else {
+                            totalCol += amt;
+                        }
                     }
 
                     let tr = document.createElement("tr");
@@ -251,24 +280,22 @@
                         <td><b>${item.type}</b></td>
                         <td>${item.name}</td>
                         <td>${item.amount}</td>
-                        <td><span class="${item.status === 'مقبوض' ? 'green' : 'red'}">${item.status}</span></td>
-                        <td style="font-size: 12px; color: #666;">${item.date}</td>
+                        <td><span class="${isCanceled ? 'badge-red' : 'badge-green'}">${item.status}</span></td>
+                        <td style="font-size: 12px; color: #64748b;">${item.date}</td>
                         <td>
-                            ${currentRole === 'manager' ? `<button onclick="toggleStatus(${index})" style="padding:4px 10px; font-size:12px; width:auto; background:#6c757d;">تعديل الحالة</button>` : '<span style="color:#aaa; font-size:12px;">للمدير فقط</span>'}
+                            ${currentRole === 'manager' && !isCanceled ? `<button onclick="cancelRecord(${index})" style="padding:5px 10px; font-size:12px; width:auto; background:#ef4444; color:white; border:none; border-radius:6px; cursor:pointer;">إلغاء الوصل</button>` : '<span style="color:#cbd5e1; font-size:12px;">غير متاح</span>'}
                         </td>
                     `;
                     tbody.appendChild(tr);
                 });
             }
 
-            // تحديث ملخص الصندوق للمدير (قديش مع الجابي)
             let net = totalCol - totalExp;
             document.getElementById("totalCollected").innerText = totalCol;
             document.getElementById("totalExpenses").innerText = totalExp;
             document.getElementById("netWithCollector").innerText = net + " ليرة";
 
-            // تحديث رسالة الواتساب التلقائية بناءً على المبلغ الصافي
-            let waText = `مرحباً، تقرير شركة العالمية اليومي:\n- إجمالي القبض: ${totalCol}\n- إجمالي المصاريف: ${totalExp}\n- الصافي الموجود مع الجابي حالياً: ${net}`;
+            let waText = `مرحباً، تقرير شركة العالمية اليومي:\n- إجمالي الحوالات والشحن: ${totalCol}\n- إجمالي المصاريف: ${totalExp}\n- الصافي الموجود مع الجابي حالياً: ${net}`;
             document.getElementById("waBtn").href = "https://wa.me/963000000000?text=" + encodeURIComponent(waText);
         }
 
@@ -278,15 +305,20 @@
             html2canvas(document.getElementById("appDiv")).then(canvas => {
                 let img = canvas.toDataURL("image/png");
                 doc.addImage(img, "PNG", 10, 10, 190, 0);
-                doc.save("تقرير_شركة_العالمية.pdf");
+                doc.save("تقرير_شركة_العالمية_" + new Date().toLocaleDateString('ar-EG') + ".pdf");
             });
         }
 
         function closeBox() {
-            if (confirm("هل أنت متأكد من إغلاق الصندوق، أرشفة العمليات وتصفير الحساب اليومي؟")) {
-                localStorage.removeItem("shippData");
-                loadTable();
-                alert("🔒 تم إغلاق الصندوق بنجاح.");
+            if (confirm("هل أنت متأكد من إغلاق الصندوق؟ سيتم تصدير تقرير PDF للأرشيف تلقائياً وتصفير اليومية.")) {
+                // الأرشفة التلقائية PDF قبل التصفير
+                exportPDF();
+                
+                setTimeout(() => {
+                    localStorage.removeItem("shippData");
+                    loadTable();
+                    alert("🔒 تم إغلاق الصندوق وأرشفة اليومية بنجاح.");
+                }, 1000);
             }
         }
     </script>
