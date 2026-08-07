@@ -23,7 +23,6 @@
         .card { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); }
         .login-card { max-width: 420px; margin: 30px auto; background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid var(--gold); }
         
-        /* شارة الشعار البديلة المتناسقة والفاخرة */
         .brand-logo-badge { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
 
         .form-group { margin-bottom: 18px; text-align: right; }
@@ -61,10 +60,7 @@
             <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 النمط</button>
         </div>
         
-        <!-- شعار فخم جاهز بدون صور خارجية -->
-        <div class="brand-logo-badge">
-            <i class="fas fa-globe"></i>
-        </div>
+        <div class="brand-logo-badge"><i class="fas fa-globe"></i></div>
         
         <h2 style="margin: 0 0 2px 0; font-size: 19px; color: var(--text-color);">شركة العالمية</h2>
         <span class="owner-badge">إدارة: الأستاذ بلال عبد الرزاق</span>
@@ -301,17 +297,18 @@
             
             if(records.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مسجلة حالياً بالسحابة</td></tr>`;
-                if(role === 'manager') renderManagerSummary([]);
+                if(role === 'manager') renderManagerSummary([], document.getElementById("filterCollector").value);
                 return;
             }
 
+            let selectedFilterCollector = document.getElementById("filterCollector") ? document.getElementById("filterCollector").value : "ALL";
+
             if(role === 'manager') {
-                renderManagerSummary(records);
+                renderManagerSummary(records, selectedFilterCollector);
             }
 
             let displayedRecords = records;
             if(role === 'manager') {
-                let selectedFilterCollector = document.getElementById("filterCollector").value;
                 if(selectedFilterCollector !== "ALL") {
                     displayedRecords = records.filter(r => r.collector === selectedFilterCollector);
                 }
@@ -342,7 +339,7 @@
             });
         }
 
-        function renderManagerSummary(records) {
+        function renderManagerSummary(records, filterCol) {
             let container = document.getElementById("collectorsSummaryContainer");
             let alertLogBox = document.getElementById("alertLog");
             container.innerHTML = "";
@@ -363,7 +360,10 @@
                 }
             });
 
+            // إذا تم اختيار جابي محدد بالفلتر، نعرض مربعه فقط لتكون الشاشة مركزة عليه
             for(let colName in summaryData) {
+                if(filterCol !== "ALL" && filterCol !== colName) continue;
+                
                 container.innerHTML += `
                     <div class="collector-card">
                         <h4 style="margin:0 0 8px 0; color:var(--gold-dark); font-size:14px;">بحوزة: ${colName}</h4>
