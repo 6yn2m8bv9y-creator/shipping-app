@@ -3,14 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة العالمية - إدارة الشحن والحوالات (سحابي)</title>
+    <title>شركة العالمية - نظام الإدارة السحابي</title>
     <!-- مكتبات Firebase السحابية -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
         :root { 
             --primary: #0284c7; --primary-dark: #0369a1; --gold: #d4af37; --gold-dark: #b45309; 
-            --dark: #0f172a; --light: #f0f9ff; --success: #10b981; --danger: #ef4444; --border: #bae6fd;
+            --dark: #0f172a; --light: #f8fafc; --success: #10b981; --danger: #ef4444; --border: #cbd5e1;
             --card-bg: #ffffff; --text-color: #0f172a; --sub-text: #64748b;
         }
         [data-theme="dark"] {
@@ -18,11 +19,16 @@
             --dark: #f8fafc; --light: #090d16; --border: #1e293b; --card-bg: #111827;
             --text-color: #f8fafc; --sub-text: #94a3b8;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); margin: 0; padding: 20px; direction: rtl; color: var(--text-color); transition: 0.3s; }
-        .card { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 35px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); }
-        .login-card { max-width: 420px; margin: 50px auto; background: var(--card-bg); padding: 40px; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid var(--gold); }
-        .form-group { margin-bottom: 20px; text-align: right; }
-        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-color); }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); margin: 0; padding: 15px; direction: rtl; color: var(--text-color); transition: 0.3s; }
+        .card { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); }
+        .login-card { max-width: 420px; margin: 30px auto; background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid var(--gold); }
+        
+        /* تصميم الشعار المعتمد */
+        .brand-logo-container { width: 110px; height: 110px; margin: 0 auto 15px auto; border-radius: 50%; padding: 5px; background: linear-gradient(135deg, #d4af37, #0284c7); box-shadow: 0 4px 15px rgba(212,175,55,0.3); display: flex; align-items: center; justify-content: center; }
+        .brand-logo { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; background: white; }
+
+        .form-group { margin-bottom: 18px; text-align: right; }
+        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-color); }
         input, select { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 14px; background: var(--card-bg); color: var(--text-color); outline: none; }
         .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
         .btn-gold { background: linear-gradient(135deg, #d4af37, #b45309); color: white; box-shadow: 0 4px 12px rgba(212,175,55,0.25); }
@@ -42,18 +48,28 @@
         .owner-badge { background: linear-gradient(135deg, #d4af37, #b45309); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
         .receipt-code { font-family: monospace; background: var(--light); padding: 4px 8px; border-radius: 6px; font-weight: bold; color: var(--primary-dark); border: 1px solid var(--border); font-size: 12px; }
         .alert-row { background: rgba(239, 68, 68, 0.08) !important; }
+        .type-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
+        .type-حوالة { background: #dcfce7; color: #166534; }
+        .type-شحن { background: #dbeafe; color: #1e40af; }
+        .type-مصروف { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body data-theme="light">
 
     <!-- شاشة تسجيل الدخول -->
     <div id="loginDiv" class="login-card">
-        <div class="top-bar-actions" style="justify-content: flex-end; margin-bottom: 10px;">
-            <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 النمط الفاخر</button>
+        <div class="top-bar-actions" style="justify-content: flex-end; margin-bottom: 5px;">
+            <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 النمط</button>
         </div>
-        <h2 style="margin: 5px 0 2px 0; font-size: 20px; color: var(--text-color);">شركة العالمية</h2>
-        <span class="owner-badge">إدارة وصاحب الشركة: الأستاذ بلال عبد الرزاق</span>
-        <p style="color: var(--sub-text); font-size: 12px; margin: 15px 0 20px 0;">نظام الإدارة السحابي المباشر ($)</p>
+        
+        <!-- الشعار الرسمي -->
+        <div class="brand-logo-container">
+            <img src="https://i.ibb.co/6R21hX7/image-5.png" alt="شركة العالمية" class="brand-logo" onerror="this.src=''">
+        </div>
+        
+        <h2 style="margin: 0 0 2px 0; font-size: 19px; color: var(--text-color);">شركة العالمية</h2>
+        <span class="owner-badge">إدارة: الأستاذ بلال عبد الرزاق</span>
+        <p style="color: var(--sub-text); font-size: 11px; margin: 10px 0 15px 0;">نظام الإدارة السحابي المباشر ($)</p>
         
         <div class="login-options">
             <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">مدير العالمية</button>
@@ -74,24 +90,27 @@
         <button class="btn btn-gold" onclick="login()">تسجيل الدخول السحابي</button>
     </div>
 
-    <!-- لوحة التحكم -->
+    <!-- لوحة التحكم الداخلية -->
     <div id="appDiv" class="card" style="display:none;">
         <div class="top-bar-actions">
             <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 تبديل النمط</button>
-            <button class="btn-logout" onclick="location.reload()">تسجيل خروج</button>
+            <button class="btn-logout" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> خروج</button>
         </div>
         
         <div class="app-header">
-            <div>
-                <h2 style="margin:0; font-size: 18px; color: var(--text-color);">شركة العالمية (السحابي المباشر)</h2>
-                <span class="owner-badge">إدارة: الأستاذ بلال عبد الرزاق</span><br>
-                <span id="roleTitle" style="font-size: 12px; color: var(--sub-text); font-weight: 600;"></span>
+            <div style="display: flex; align-items: center; gap: 15px;">
+                <img src="https://i.ibb.co/6R21hX7/image-5.png" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--gold);" alt="Logo">
+                <div>
+                    <h2 style="margin:0; font-size: 17px; color: var(--text-color);">شركة العالمية للشحن والحوالات</h2>
+                    <span class="owner-badge">الإدارة: الأستاذ بلال عبد الرزاق</span><br>
+                    <span id="roleTitle" style="font-size: 12px; color: var(--sub-text); font-weight: 600;"></span>
+                </div>
             </div>
         </div>
 
         <!-- قسم الإدخال (خاص بالجابي) -->
         <div id="collectorSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--text-color);">تسجيل حركة جديدة (تتحدث فوراً عند المدير)</h3>
+            <h3 style="margin-top:0; font-size:15px; color: var(--text-color);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة (تتحدث فوراً عند المدير)</h3>
             <div class="form-group">
                 <label>نوع الحركة:</label>
                 <select id="type">
@@ -113,13 +132,13 @@
 
         <!-- لوحة المدير المتقدمة -->
         <div id="managerSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);">كشوفات المبالغ بحوزة الجباة لحظياً ($)</h3>
+            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> كشوفات المبالغ بحوزة الجباة لحظياً ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
             
             <!-- أداة الفلترة حسب الجابي للمدير -->
             <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
                 <div style="flex: 1; margin-bottom: 0;">
-                    <label style="margin-bottom: 5px;">فلتر عرض الجدول حسب الجابي:</label>
+                    <label style="margin-bottom: 5px;"><i class="fas fa-filter"></i> فلتر عرض الجدول حسب الجابي:</label>
                     <select id="filterCollector" onchange="filterTableByManager()">
                         <option value="ALL">عرض كل الحركات (الكل)</option>
                         <option value="جابي 1">حركات جابي 1 فقط</option>
@@ -129,7 +148,7 @@
             </div>
 
             <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border); margin-top:15px;">
-                <h4 style="margin:0 0 10px 0; color:var(--danger); font-size:14px;">🚨 سجل التحذيرات والإلغاءات:</h4>
+                <h4 style="margin:0 0 10px 0; color:var(--danger); font-size:14px;"><i class="fas fa-exclamation-triangle"></i> سجل التحذيرات والإلغاءات:</h4>
                 <div id="alertLog" style="font-size:13px; color:var(--sub-text);">لا توجد حالات إلغاء مسجلة.</div>
             </div>
         </div>
@@ -151,6 +170,7 @@
     </div>
 
     <script>
+        // إعدادات ربط Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAZDUBWhZaApdidKkJv4LsL1X...",
             authDomain: "shipping-b300f.firebaseapp.com",
@@ -166,7 +186,7 @@
 
         let role = "";
         let currentCollectorLoggedIn = "";
-        let globalRecords = []; // لحفظ النسخة الكاملة للبيانات للفلترة
+        let globalRecords = [];
 
         function toggleTheme() {
             let body = document.body;
@@ -289,7 +309,6 @@
                 renderManagerSummary(records);
             }
 
-            // تطبيق الفلتر الخاص بالمدير إن وجد
             let displayedRecords = records;
             if(role === 'manager') {
                 let selectedFilterCollector = document.getElementById("filterCollector").value;
@@ -309,7 +328,7 @@
                     <tr class="${isCanceled ? 'alert-row' : ''}">
                         <td><span class="receipt-code">${r.code || 'GLB-0000'}</span></td>
                         <td><b>${r.collector}</b></td>
-                        <td><b>${r.type}</b></td>
+                        <td><span class="type-pill type-${r.type}">${r.type}</span></td>
                         <td>${r.name}</td>
                         <td>$${r.amount}</td>
                         <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${r.status}</span><br><small style="color:var(--sub-text);">${r.date || ''}</small></td>
