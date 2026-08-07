@@ -57,7 +57,7 @@
         </div>
         <div class="brand-logo-badge"><i class="fas fa-globe"></i></div>
         <h2 style="margin: 0 0 2px 0; font-size: 19px; color: var(--text-color);">شركة العالمية</h2>
-        <span class="owner-badge">إدارة: الأستاذ بلال عبد الرزاق</span>
+        <span class="owner-badge">إدارة: الحاج بلال عبد الرزاق</span>
         <p style="color: var(--sub-text); font-size: 11px; margin: 10px 0 15px 0;">نظام الإدارة السحابي المباشر ($)</p>
         
         <div class="login-options">
@@ -92,7 +92,7 @@
                 </div>
                 <div>
                     <h2 style="margin:0; font-size: 17px; color: var(--text-color);">شركة العالمية للشحن والحوالات</h2>
-                    <span class="owner-badge">الإدارة: الأستاذ بلال عبد الرزاق</span><br>
+                    <span class="owner-badge">الإدارة: الحاج بلال عبد الرزاق</span><br>
                     <span id="roleTitle" style="font-size: 12px; color: var(--sub-text); font-weight: 600;"></span>
                 </div>
             </div>
@@ -196,8 +196,8 @@
             let p = document.getElementById("pass").value;
             if (role === 'manager') {
                 if (p === "admin123") {
-                    currentCollectorLoggedIn = "الأستاذ بلال عبد الرزاق (المدير)";
-                    startApp("مدير النظام (الأستاذ بلال عبد الرزاق)");
+                    currentCollectorLoggedIn = "الحاج بلال عبد الرزاق (المدير)";
+                    startApp("مدير النظام (الحاج بلال عبد الرزاق)");
                 } else { alert("كلمة مرور المدير غير صحيحة! (admin123)"); }
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
@@ -305,6 +305,8 @@
 
             displayedRecords.forEach((r) => {
                 let isCanceled = r.status && r.status.includes('ملغي');
+                let displayStatus = isCanceled ? 'ملغي' : r.status;
+                
                 tbody.innerHTML += `
                     <tr class="${isCanceled ? 'alert-row' : ''}">
                         <td><span class="receipt-code">${r.code || 'GLB-0000'}</span></td>
@@ -312,7 +314,7 @@
                         <td><span class="type-pill type-${r.type}">${r.type}</span></td>
                         <td>${r.name}</td>
                         <td>$${r.amount}</td>
-                        <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${r.status}</span><br><small style="color:var(--sub-text);">${r.date || ''}</small></td>
+                        <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${displayStatus}</span><br><small style="color:var(--sub-text);">${r.date || ''}</small></td>
                         <td>
                             ${role==='collector' && !isCanceled && r.collector === currentCollectorLoggedIn ? `
                                 <button onclick="cancelRecord('${r.id}', '${r.code}', '${r.collector}')" class="badge-red">إلغاء</button>
@@ -334,7 +336,6 @@
             records.forEach(r => {
                 let col = r.collector;
                 if(r.status && r.status.includes('ملغي')) {
-                    // إزالة كلمة "ملغي:" المتكررة لعرض السبب بنظافة مباشرة
                     let cleanReason = r.status.replace('ملغي: ', '');
                     alertHtml += `<p style="margin:5px 0;">⚠️ الوصل <b>${r.code}</b> للجابي <b>${r.collector}</b> (سبب الإلغاء: <span style="color:var(--danger)">${cleanReason}</span>)</p>`;
                 } else {
