@@ -3,7 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة العالمية - إدارة الشحن والحوالات</title>
+    <title>شركة العالمية - إدارة الشحن والحوالات (سحابي)</title>
+    <!-- مكتبات Firebase السحابية -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <style>
         :root { 
             --primary: #0284c7; --primary-dark: #0369a1; --gold: #d4af37; --gold-dark: #b45309; 
@@ -50,7 +53,7 @@
         </div>
         <h2 style="margin: 5px 0 2px 0; font-size: 20px; color: var(--text-color);">شركة العالمية</h2>
         <span class="owner-badge">إدارة وصاحب الشركة: الأستاذ بلال عبد الرزاق</span>
-        <p style="color: var(--sub-text); font-size: 12px; margin: 15px 0 20px 0;">نظام إدارة الشحن والحوالات ($)</p>
+        <p style="color: var(--sub-text); font-size: 12px; margin: 15px 0 20px 0;">نظام الإدارة السحابي المباشر ($)</p>
         
         <div class="login-options">
             <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">مدير العالمية</button>
@@ -59,13 +62,16 @@
         
         <div class="form-group" id="collectorSelectGroup" style="display:none;">
             <label>اختر اسم الجابي:</label>
-            <select id="loginCollectorName"></select>
+            <select id="loginCollectorName">
+                <option value="جابي 1">جابي 1</option>
+                <option value="جابي 2">جابي 2</option>
+            </select>
         </div>
 
         <div class="form-group">
             <input type="password" id="pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter') login()">
         </div>
-        <button class="btn btn-gold" onclick="login()">تسجيل الدخول</button>
+        <button class="btn btn-gold" onclick="login()">تسجيل الدخول السحابي</button>
     </div>
 
     <!-- لوحة التحكم -->
@@ -77,7 +83,7 @@
         
         <div class="app-header">
             <div>
-                <h2 style="margin:0; font-size: 18px; color: var(--text-color);">شركة العالمية</h2>
+                <h2 style="margin:0; font-size: 18px; color: var(--text-color);">شركة العالمية (السحابي المباشر)</h2>
                 <span class="owner-badge">إدارة: الأستاذ بلال عبد الرزاق</span><br>
                 <span id="roleTitle" style="font-size: 12px; color: var(--sub-text); font-weight: 600;"></span>
             </div>
@@ -85,7 +91,7 @@
 
         <!-- قسم الإدخال (خاص بالجابي) -->
         <div id="collectorSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--text-color);">تسجيل حركة جديدة في الصندوق</h3>
+            <h3 style="margin-top:0; font-size:15px; color: var(--text-color);">تسجيل حركة جديدة (تتحدث فوراً عند المدير)</h3>
             <div class="form-group">
                 <label>نوع الحركة:</label>
                 <select id="type">
@@ -102,12 +108,12 @@
                 <label>المبلغ ($):</label>
                 <input type="number" step="0.01" id="amount" placeholder="المبلغ بالدولار...">
             </div>
-            <button class="btn btn-gold" onclick="addData()">حفظ وإصدار السند</button>
+            <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
         <!-- لوحة المدير -->
         <div id="managerSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);">كشوفات المبالغ بحوزة الجباة ($) والصفاء المالي</h3>
+            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);">كشوفات المبالغ بحوزة الجباة لحظياً ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
             
             <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border); margin-top:15px;">
@@ -133,13 +139,23 @@
     </div>
 
     <script>
+        // إعدادات ربط Firebase الخاصة بك
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZDUBWhZaApdidKkJv4LsL1X...",
+            authDomain: "shipping-b300f.firebaseapp.com",
+            projectId: "shipping-b300f",
+            storageBucket: "shipping-b300f.appspot.com",
+            messagingSenderId: "838696145489",
+            appId: "1:838696145489:web:869b0f45605b4129...",
+            measurementId: "G-FTNJ8BBCMD"
+        };
+
+        // تهيئة النظام السحابي
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
         let role = "";
         let currentCollectorLoggedIn = "";
-
-        if (!localStorage.getItem("collectorsData")) {
-            let defaultCollectors = [{ name: "جابي 1", pass: "collector123" }, { name: "جابي 2", pass: "collector123" }];
-            localStorage.setItem("collectorsData", JSON.stringify(defaultCollectors));
-        }
 
         function toggleTheme() {
             let body = document.body;
@@ -156,21 +172,8 @@
                 document.getElementById('btnC').className = 'login-opt-btn active';
                 document.getElementById('btnM').className = 'login-opt-btn';
                 document.getElementById('collectorSelectGroup').style.display = 'block';
-                populateCollectorDropdown();
             }
         }
-
-        function populateCollectorDropdown() {
-            let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
-            let select = document.getElementById('loginCollectorName');
-            select.innerHTML = "";
-            collectors.forEach(c => {
-                let opt = document.createElement('option');
-                opt.value = c.name; opt.innerText = c.name;
-                select.appendChild(opt);
-            });
-        }
-        populateCollectorDropdown();
 
         function login() {
             let p = document.getElementById("pass").value;
@@ -181,12 +184,10 @@
                 } else { alert("كلمة مرور المدير غير صحيحة! (admin123)"); }
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
-                let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
-                let found = collectors.find(c => c.name === selectedName && c.pass === p);
-                if (found) {
-                    currentCollectorLoggedIn = found.name;
-                    startApp(found.name);
-                } else { alert("كلمة المرور غير صحيحة للجابي! (collector123)"); }
+                if (p === "collector123") {
+                    currentCollectorLoggedIn = selectedName;
+                    startApp(selectedName);
+                } else { alert("كلمة مرور الجابي غير صحيحة! (collector123)"); }
             }
         }
 
@@ -198,12 +199,11 @@
             if(role === 'manager') {
                 document.getElementById("managerSection").style.display = "block";
                 document.getElementById("collectorSection").style.display = "none";
-                renderManagerSummary();
             } else {
                 document.getElementById("managerSection").style.display = "none";
                 document.getElementById("collectorSection").style.display = "block";
             }
-            loadTable();
+            listenToDatabase();
         }
 
         function addData() {
@@ -212,57 +212,100 @@
             if(!name || !amount) { alert("الرجاء ملء كافة الحقول!"); return; }
             
             let receiptCode = "GLB-" + Math.floor(1000 + Math.random() * 9000);
-            let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            records.push({ 
+            
+            db.collection("shippings").add({
                 code: receiptCode,
-                collector: currentCollectorLoggedIn, 
-                type: document.getElementById("type").value, 
-                name: name, 
-                amount: parseFloat(amount).toFixed(2), 
-                status: "مقبوض", 
-                date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'}) 
+                collector: currentCollectorLoggedIn,
+                type: document.getElementById("type").value,
+                name: name,
+                amount: parseFloat(amount).toFixed(2),
+                status: "مقبوض",
+                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
+            }).then(() => {
+                document.getElementById("clientName").value = "";
+                document.getElementById("amount").value = "";
+                alert("تم إرسال الحركة وإصدار السند سحابياً بنجاح! رقم الوصل: " + receiptCode);
+            }).catch(error => {
+                alert("خطأ في الاتصال بالسحابة: " + error.message);
             });
-            localStorage.setItem("shippData", JSON.stringify(records));
-            document.getElementById("clientName").value = "";
-            document.getElementById("amount").value = "";
-            loadTable();
-            alert("تم تسجيل الحركة وإصدار السند! رقم الوصل: " + receiptCode);
         }
 
-        function duplicateRecord(i) {
-            let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            let target = records[i];
-            document.getElementById("type").value = target.type;
-            document.getElementById("clientName").value = target.name;
-            document.getElementById("amount").value = target.amount;
+        function duplicateRecord(type, name, amount) {
+            document.getElementById("type").value = type;
+            document.getElementById("clientName").value = name;
+            document.getElementById("amount").value = amount;
             window.scrollTo({top: 0, behavior: 'smooth'});
             alert("تم نسخ البيانات للحقول العلوية لتسجيلها بسرعة!");
         }
 
-        function cancelRecord(i) {
+        function cancelRecord(docId, code, collectorName) {
             let reason = prompt("يرجى إدخال سبب إلغاء هذا الوصل (إجباري):");
             if(reason && reason.trim() !== "") {
-                let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-                records[i].status = "ملغي: " + reason;
-                localStorage.setItem("shippData", JSON.stringify(records));
-                loadTable();
+                db.collection("shippings").doc(docId).update({
+                    status: "ملغي: " + reason
+                }).then(() => {
+                    alert("تم إلغاء الوصل وتحديث السحابة فوراً.");
+                });
             } else { alert("يجب إدخال سبب للإلغاء!"); }
         }
 
-        function renderManagerSummary() {
-            let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
+        // الاستماع المباشر للتحديثات السحابية (لايف 100%)
+        function listenToDatabase() {
+            db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                let records = [];
+                snapshot.forEach((doc) => {
+                    records.push({ id: doc.id, ...doc.data() });
+                });
+                renderUI(records);
+            });
+        }
+
+        function renderUI(records) {
+            let tbody = document.getElementById("tableBody");
+            tbody.innerHTML = "";
+            
+            if(records.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مسجلة حالياً بالسحابة</td></tr>`;
+                if(role === 'manager') renderManagerSummary([]);
+                return;
+            }
+
+            if(role === 'manager') {
+                renderManagerSummary(records);
+            }
+
+            records.forEach((r) => {
+                let isCanceled = r.status && r.status.includes('ملغي');
+                tbody.innerHTML += `
+                    <tr class="${isCanceled ? 'alert-row' : ''}">
+                        <td><span class="receipt-code">${r.code || 'GLB-0000'}</span></td>
+                        <td><b>${r.collector}</b></td>
+                        <td><b>${r.type}</b></td>
+                        <td>${r.name}</td>
+                        <td>$${r.amount}</td>
+                        <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${r.status}</span><br><small style="color:var(--sub-text);">${r.date || ''}</small></td>
+                        <td>
+                            ${role==='collector' && !isCanceled && r.collector === currentCollectorLoggedIn ? `
+                                <button onclick="cancelRecord('${r.id}', '${r.code}', '${r.collector}')" class="badge-red">إلغاء</button>
+                                <button onclick="duplicateRecord('${r.type}', '${r.name}', '${r.amount}')" style="background:var(--primary); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; margin-right:4px;">تكرار</button>
+                            ` : '<span style="color:var(--sub-text); font-size:12px;">معتمد</span>'}
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function renderManagerSummary(records) {
             let container = document.getElementById("collectorsSummaryContainer");
             let alertLogBox = document.getElementById("alertLog");
             container.innerHTML = "";
 
-            let summaryData = {};
-            collectors.forEach(c => summaryData[c.name] = 0);
+            let summaryData = { "جابي 1": 0, "جابي 2": 0 };
             let alertHtml = "";
 
             records.forEach(r => {
                 let col = r.collector;
-                if(r.status.includes('ملغي')) {
+                if(r.status && r.status.includes('ملغي')) {
                     alertHtml += `<p style="margin:5px 0;">⚠️ الوصل <b>${r.code}</b> للجابي <b>${r.collector}</b> أُلغي بسبب: <span style="color:var(--danger)">${r.status}</span></p>`;
                 } else {
                     let amt = parseFloat(r.amount) || 0;
@@ -281,36 +324,6 @@
                     </div>`;
             }
             alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء مسجلة اليوم.";
-        }
-
-        function loadTable() {
-            let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            let tbody = document.getElementById("tableBody");
-            tbody.innerHTML = "";
-            if(records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مسجلة حالياً</td></tr>`;
-                if(role === 'manager') renderManagerSummary();
-                return;
-            }
-            records.forEach((r, i) => {
-                let isCanceled = r.status.includes('ملغي');
-                tbody.innerHTML += `
-                    <tr class="${isCanceled ? 'alert-row' : ''}">
-                        <td><span class="receipt-code">${r.code || 'GLB-0000'}</span></td>
-                        <td><b>${r.collector}</b></td>
-                        <td><b>${r.type}</b></td>
-                        <td>${r.name}</td>
-                        <td>$${r.amount}</td>
-                        <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${r.status}</span><br><small style="color:var(--sub-text);">${r.date}</small></td>
-                        <td>
-                            ${role==='collector' && !isCanceled && r.collector === currentCollectorLoggedIn ? `
-                                <button onclick="cancelRecord(${i})" class="badge-red">إلغاء</button>
-                                <button onclick="duplicateRecord(${i})" style="background:var(--primary); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; margin-right:4px;">تكرار</button>
-                            ` : '<span style="color:var(--sub-text); font-size:12px;">معتمد</span>'}
-                        </td>
-                    </tr>`;
-            });
-            if(role === 'manager') renderManagerSummary();
         }
     </script>
 </body>
