@@ -111,11 +111,23 @@
             <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
-        <!-- لوحة المدير -->
+        <!-- لوحة المدير المتقدمة -->
         <div id="managerSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
             <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);">كشوفات المبالغ بحوزة الجباة لحظياً ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
             
+            <!-- أداة الفلترة حسب الجابي للمدير -->
+            <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+                <div style="flex: 1; margin-bottom: 0;">
+                    <label style="margin-bottom: 5px;">فلتر عرض الجدول حسب الجابي:</label>
+                    <select id="filterCollector" onchange="filterTableByManager()">
+                        <option value="ALL">عرض كل الحركات (الكل)</option>
+                        <option value="جابي 1">حركات جابي 1 فقط</option>
+                        <option value="جابي 2">حركات جابي 2 فقط</option>
+                    </select>
+                </div>
+            </div>
+
             <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border); margin-top:15px;">
                 <h4 style="margin:0 0 10px 0; color:var(--danger); font-size:14px;">🚨 سجل التحذيرات والإلغاءات:</h4>
                 <div id="alertLog" style="font-size:13px; color:var(--sub-text);">لا توجد حالات إلغاء مسجلة.</div>
@@ -139,7 +151,6 @@
     </div>
 
     <script>
-        // إعدادات ربط Firebase الخاصة بك
         const firebaseConfig = {
             apiKey: "AIzaSyAZDUBWhZaApdidKkJv4LsL1X...",
             authDomain: "shipping-b300f.firebaseapp.com",
@@ -150,12 +161,12 @@
             measurementId: "G-FTNJ8BBCMD"
         };
 
-        // تهيئة النظام السحابي
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
         let role = "";
         let currentCollectorLoggedIn = "";
+        let globalRecords = []; // لحفظ النسخة الكاملة للبيانات للفلترة
 
         function toggleTheme() {
             let body = document.body;
@@ -250,15 +261,18 @@
             } else { alert("يجب إدخال سبب للإلغاء!"); }
         }
 
-        // الاستماع المباشر للتحديثات السحابية (لايف 100%)
         function listenToDatabase() {
             db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                let records = [];
+                globalRecords = [];
                 snapshot.forEach((doc) => {
-                    records.push({ id: doc.id, ...doc.data() });
+                    globalRecords.push({ id: doc.id, ...doc.data() });
                 });
-                renderUI(records);
+                renderUI(globalRecords);
             });
+        }
+
+        function filterTableByManager() {
+            renderUI(globalRecords);
         }
 
         function renderUI(records) {
@@ -275,7 +289,21 @@
                 renderManagerSummary(records);
             }
 
-            records.forEach((r) => {
+            // تطبيق الفلتر الخاص بالمدير إن وجد
+            let displayedRecords = records;
+            if(role === 'manager') {
+                let selectedFilterCollector = document.getElementById("filterCollector").value;
+                if(selectedFilterCollector !== "ALL") {
+                    displayedRecords = records.filter(r => r.collector === selectedFilterCollector);
+                }
+            }
+
+            if(displayedRecords.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding: 20px;">لا توجد حركات مطابقة لهذا الجابي</td></tr>`;
+                return;
+            }
+
+            displayedRecords.forEach((r) => {
                 let isCanceled = r.status && r.status.includes('ملغي');
                 tbody.innerHTML += `
                     <tr class="${isCanceled ? 'alert-row' : ''}">
