@@ -7,22 +7,43 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
-        :root { --gold: #d4af37; --gold-dark: #aa820a; --dark: #1e293b; --light: #f8fafc; --success: #10b981; --danger: #ef4444; }
+        :root { 
+            --primary: #0284c7; 
+            --primary-dark: #0369a1; 
+            --gold: #d4af37; 
+            --gold-dark: #b45309; 
+            --dark: #0f172a; 
+            --light: #f0f9ff; 
+            --success: #10b981; 
+            --danger: #ef4444; 
+            --border: #bae6fd;
+        }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); margin: 0; padding: 20px; direction: rtl; color: var(--dark); }
-        .card { max-width: 950px; margin: auto; background: white; padding: 35px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-        .login-card { max-width: 420px; margin: 50px auto; background: white; padding: 40px; border-radius: 20px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 5px solid var(--gold); }
-        .logo-img { width: 120px; height: auto; margin-bottom: 15px; filter: drop-shadow(0px 4px 8px rgba(0,0,0,0.15)); }
-        .form-group { margin-bottom: 18px; text-align: right; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: #475569; }
-        input, select { width: 100%; padding: 12px 15px; border: 1px solid #cbd5e1; border-radius: 10px; box-sizing: border-box; font-size: 14px; }
-        .btn { background: linear-gradient(135deg, #d4af37, #aa820a); color: white; border: none; padding: 12px 20px; border-radius: 10px; cursor: pointer; font-weight: bold; width: 100%; font-size: 15px; }
-        .btn-logout { background: #fee2e2; color: #dc2626; width: auto; padding: 8px 16px; float: left; border-radius: 8px; border: none; cursor: pointer; font-weight: bold; }
-        .login-opt-btn { background: #f1f5f9; border: 1px solid #cbd5e1; padding: 12px; border-radius: 10px; cursor: pointer; font-weight: bold; flex: 1; }
-        .login-opt-btn.active { background: var(--gold); color: white; border-color: var(--gold); }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 10px; overflow: hidden; }
-        th, td { border: 1px solid #f1f5f9; padding: 14px; text-align: center; font-size: 14px; }
-        th { background: #f8fafc; color: #475569; }
-        .badge-red { color: var(--danger); background: #fef2f2; padding: 5px 12px; border-radius: 20px; font-weight: 600; font-size: 12px; }
+        .card { max-width: 950px; margin: auto; background: white; padding: 35px; border-radius: 24px; box-shadow: 0 10px 30px rgba(2, 132, 199, 0.08); border: 1px solid var(--border); }
+        
+        .login-card { max-width: 420px; margin: 50px auto; background: white; padding: 40px; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(2, 132, 199, 0.08); border-top: 6px solid var(--primary); }
+        .logo-img { width: 130px; height: auto; margin-bottom: 15px; filter: drop-shadow(0px 6px 12px rgba(0,0,0,0.12)); }
+        
+        .form-group { margin-bottom: 20px; text-align: right; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: #334155; }
+        input, select { width: 100%; padding: 12px 16px; border: 1px solid #cbd5e1; border-radius: 12px; box-sizing: border-box; font-size: 14px; background: #fff; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--primary); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15); }
+        
+        .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2); }
+        .btn:hover { background: var(--primary-dark); }
+        .btn-gold { background: linear-gradient(135deg, #d4af37, #b45309); box-shadow: 0 4px 12px rgba(212,175,55,0.25); }
+        .btn-logout { background: #fef2f2; color: var(--danger); width: auto; padding: 8px 16px; float: left; border-radius: 10px; border: 1px solid #fee2e2; cursor: pointer; font-weight: 600; font-size: 13px; }
+        
+        .login-options { display: flex; gap: 10px; margin-bottom: 20px; }
+        .login-opt-btn { background: #f8fafc; color: #475569; border: 1px solid #cbd5e1; padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; flex: 1; transition: 0.2s; display: flex; align-items: center; justify-content: center; gap: 6px; }
+        .login-opt-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 12px rgba(2, 132, 199, 0.2); }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; }
+        th, td { border-bottom: 1px solid #e2e8f0; padding: 14px; text-align: center; font-size: 14px; }
+        th { background: #f8fafc; color: #475569; font-weight: 600; }
+        
+        .badge-red { color: var(--danger); background: #fef2f2; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px; border: 1px solid #fee2e2; cursor: pointer; }
+        .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; border-bottom: 2px solid #f0f9ff; padding-bottom: 20px; }
     </style>
 </head>
 <body>
@@ -30,32 +51,53 @@
     <!-- شاشة تسجيل الدخول -->
     <div id="loginDiv" class="login-card">
         <img src="image_2.png" class="logo-img" onerror="this.style.display='none'">
-        <h2>شركة العالمية</h2>
-        <p style="color: #64748b; font-size: 13px; margin-bottom: 20px;">نظام إدارة الشحن والحوالات</p>
-        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
-            <button class="login-opt-btn active" id="btnM" onclick="setRole('manager')">⚙️ مدير العالمية</button>
-            <button class="login-opt-btn" id="btnC" onclick="setRole('collector')">💵 جابي 1</button>
+        <h2 style="margin: 5px 0 5px 0; font-size: 22px; color: var(--primary-dark);">شركة العالمية</h2>
+        <p style="color: #64748b; font-size: 13px; margin-bottom: 25px;">نظام إدارة الشحن والحوالات والقبض</p>
+        
+        <div class="login-options">
+            <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 15a3 3 0 100-6 3 3 0 000 6z"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                مدير العالمية
+            </button>
+            <button type="button" class="login-opt-btn" id="btnC" onclick="setRole('collector')">
+                <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                جابي 1
+            </button>
         </div>
+        
+        <div class="form-group" id="collectorSelectGroup" style="display:none;">
+            <label>اختر اسم الجابي:</label>
+            <select id="loginCollectorName"></select>
+        </div>
+
         <div class="form-group">
             <input type="password" id="pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter') login()">
         </div>
-        <button class="btn" onclick="login()">🔓 دخول</button>
+        <button class="btn btn-gold" onclick="login()">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 3h4a2 2 0 012 2v14a2 2 0 01-2 2h-4m-5-4l5-5-5-5m5 5H3"/></svg>
+            تسجيل الدخول
+        </button>
     </div>
 
     <!-- لوحة التحكم -->
     <div id="appDiv" class="card" style="display:none;">
-        <button class="btn-logout" onclick="location.reload()">🚪 خروج</button>
-        <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 25px; border-bottom: 2px solid #f1f5f9; padding-bottom: 15px;">
-            <img src="image_2.png" style="width: 50px; height: auto;" onerror="this.style.display='none'">
-            <div>
-                <h2 style="margin:0; color: var(--gold-dark);">شركة العالمية</h2>
-                <span id="roleTitle" style="font-size: 13px; color: #64748b; font-weight: 600;"></span>
+        <button class="btn-logout" onclick="location.reload()">تسجيل خروج</button>
+        <div class="app-header">
+            <div style="display: flex; align-items: center; gap: 14px;">
+                <img src="image_2.png" style="width: 50px; height: auto;" onerror="this.style.display='none'">
+                <div>
+                    <h2 style="margin:0; font-size: 20px; color: var(--primary-dark);">شركة العالمية</h2>
+                    <span id="roleTitle" style="font-size: 13px; color: #64748b; font-weight: 600;"></span>
+                </div>
             </div>
         </div>
 
-        <!-- قسم الإدخال (خاص بالجابي 1) -->
-        <div id="collectorSection" style="display:none; background: #fafaf9; padding: 20px; border-radius: 14px; margin-bottom: 25px; border: 1px solid #e2e8f0;">
-            <h3 style="margin-top:0; font-size:16px; color: var(--gold-dark);">📥 تسجيل حركة جديدة</h3>
+        <!-- قسم الإدخال (خاص بالجابي) -->
+        <div id="collectorSection" style="display:none; background: #f8fafc; padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0; font-size:16px; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                تسجيل حركة جديدة في الصندوق
+            </h3>
             <div class="form-group">
                 <label>نوع الحركة:</label>
                 <select id="type">
@@ -72,25 +114,41 @@
                 <label>المبلغ:</label>
                 <input type="number" id="amount" placeholder="المبلغ بالأرقام...">
             </div>
-            <button class="btn" onclick="addData()">✅ حفظ وإصدار السند</button>
+            <button class="btn" onclick="addData()">حفظ وإصدار السند</button>
         </div>
 
-        <!-- قسم الإعدادات وأزرار التحكم (خاص بمدير العالمية حصراً) -->
-        <div id="managerSection" style="display:none; background: #fdf8ed; padding: 20px; border-radius: 14px; margin-bottom: 25px; border: 1px solid #fef3c7;">
-            <h3 style="margin-top:0; font-size:16px; color: #92400e;">⚙️ إعدادات مدير العالمية والربط</h3>
+        <!-- قسم الإعدادات (خاص بمدير العالمية) -->
+        <div id="managerSection" style="display:none; background: #f0f9ff; padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
+            <h3 style="margin-top:0; font-size:16px; color: var(--primary-dark); display: flex; align-items: center; gap: 8px;">
+                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+                إعدادات مدير العالمية
+            </h3>
+            
             <div class="form-group" style="max-width: 400px;">
-                <label>رقم واتساب الشركة الأساسي (لاستلام التقارير):</label>
+                <label>رقم واتساب الشركة الأساسي:</label>
                 <input type="text" id="companyWaInput" placeholder="مثال: 963912345678">
             </div>
-            <button class="btn" onclick="saveSettings()" style="width: auto; background: #b45309; margin-bottom: 15px;">💾 حفظ رقم الشركة</button>
-            <div style="text-align: center; border-top: 1px solid #fde68a; padding-top: 15px;">
-                <button class="btn" onclick="finalClose()" style="background:#16a34a; width:auto;">🔒 إغلاق الصندوق والأرشفة الفورية عبر واتساب</button>
+            <button class="btn" onclick="saveSettings()" style="width: auto; margin-bottom: 20px;">حفظ رقم الشركة</button>
+
+            <hr style="border:0; border-top:1px solid var(--border); margin: 20px 0;">
+
+            <h3 style="margin-top:0; font-size:16px; color: var(--primary-dark);">إضافة جابي جديد للنظام</h3>
+            <div style="display: flex; gap: 10px; max-width: 600px; margin-bottom: 15px;">
+                <input type="text" id="newCollectorName" placeholder="اسم الجابي (مثال: جابي 2)">
+                <input type="password" id="newCollectorPass" placeholder="كلمة المرور الخاصة به">
+                <button class="btn btn-gold" onclick="addNewCollector()" style="width: auto;">إضافة</button>
+            </div>
+            <p id="collectorsListText" style="font-size: 13px; color: #64748b; margin-bottom: 20px;"></p>
+
+            <div style="border-top: 1px solid var(--border); padding-top: 15px;">
+                <button class="btn" onclick="finalClose()" style="background:var(--success);">إغلاق الصندوق والأرشفة الفورية عبر واتساب</button>
             </div>
         </div>
 
         <table>
             <thead>
                 <tr>
+                    <th>الجابي / المسؤول</th>
                     <th>النوع</th>
                     <th>البيان / السبب</th>
                     <th>المبلغ</th>
@@ -104,59 +162,121 @@
 
     <script>
         let role = "";
+        let currentCollectorLoggedIn = "";
+
+        if (!localStorage.getItem("collectorsData")) {
+            let defaultCollectors = [{ name: "جابي 1", pass: "collector123" }];
+            localStorage.setItem("collectorsData", JSON.stringify(defaultCollectors));
+        }
+
         function setRole(r) {
             role = r;
-            document.getElementById('btnM').className = (r==='manager' ? 'login-opt-btn active' : 'login-opt-btn');
-            document.getElementById('btnC').className = (r==='collector' ? 'login-opt-btn active' : 'login-opt-btn');
+            if(r === 'manager') {
+                document.getElementById('btnM').className = 'login-opt-btn active';
+                document.getElementById('btnC').className = 'login-opt-btn';
+                document.getElementById('collectorSelectGroup').style.display = 'none';
+            } else {
+                document.getElementById('btnC').className = 'login-opt-btn active';
+                document.getElementById('btnM').className = 'login-opt-btn';
+                document.getElementById('collectorSelectGroup').style.display = 'block';
+                populateCollectorDropdown();
+            }
+        }
+
+        function populateCollectorDropdown() {
+            let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
+            let select = document.getElementById('loginCollectorName');
+            select.innerHTML = "";
+            collectors.forEach(c => {
+                let opt = document.createElement('option');
+                opt.value = c.name;
+                opt.innerText = c.name;
+                select.appendChild(opt);
+            });
+        }
+        populateCollectorDropdown();
+
+        function addNewCollector() {
+            let name = document.getElementById('newCollectorName').value.trim();
+            let pass = document.getElementById('newCollectorPass').value.trim();
+            if(!name || !pass) { alert("الرجاء إدخال اسم الجابي وكلمة المرور الخاصة به!"); return; }
+            let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
+            if(collectors.some(c => c.name === name)) { alert("هذا الاسم موجود مسبقاً!"); return; }
+            collectors.push({ name, pass });
+            localStorage.setItem("collectorsData", JSON.stringify(collectors));
+            document.getElementById('newCollectorName').value = "";
+            document.getElementById('newCollectorPass').value = "";
+            updateCollectorsListUI();
+            alert("تم إضافة الجابي بنجاح!");
+        }
+
+        function updateCollectorsListUI() {
+            let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
+            let listText = collectors.map(c => c.name).join(" ، ");
+            document.getElementById('collectorsListText').innerText = "الجباة المسجلين حالياً: " + listText;
         }
 
         function login() {
             let p = document.getElementById("pass").value;
-            if((role==='manager' && p==='admin123') || (role==='collector' && p==='collector123')) {
-                document.getElementById("loginDiv").style.display = "none";
-                document.getElementById("appDiv").style.display = "block";
-                
-                if(role === 'manager') {
-                    document.getElementById("roleTitle").innerText = "مدير العالمية";
-                    document.getElementById("managerSection").style.display = "block";
-                    document.getElementById("collectorSection").style.display = "none";
-                    let savedWa = localStorage.getItem("companyWa") || "963000000000";
-                    document.getElementById("companyWaInput").value = savedWa;
-                } else {
-                    document.getElementById("roleTitle").innerText = "جابي 1";
-                    document.getElementById("managerSection").style.display = "none";
-                    document.getElementById("collectorSection").style.display = "block";
-                }
-                loadTable();
+            if (role === 'manager') {
+                if (p === "admin123") {
+                    currentCollectorLoggedIn = "مدير العالمية";
+                    startApp("مدير العالمية");
+                } else { alert("كلمة مرور المدير غير صحيحة!"); }
             } else {
-                alert("كلمة المرور غير صحيحة!");
+                let selectedName = document.getElementById('loginCollectorName').value;
+                let collectors = JSON.parse(localStorage.getItem("collectorsData") || "[]");
+                let found = collectors.find(c => c.name === selectedName && c.pass === p);
+                if (found) {
+                    currentCollectorLoggedIn = found.name;
+                    startApp(found.name);
+                } else { alert("كلمة المرور غير صحيحة لهذا الجابي!"); }
             }
+        }
+
+        function startApp(titleName) {
+            document.getElementById("loginDiv").style.display = "none";
+            document.getElementById("appDiv").style.display = "block";
+            document.getElementById("roleTitle").innerText = titleName;
+
+            if(role === 'manager') {
+                document.getElementById("managerSection").style.display = "block";
+                document.getElementById("collectorSection").style.display = "none";
+                document.getElementById("companyWaInput").value = localStorage.getItem("companyWa") || "963000000000";
+                updateCollectorsListUI();
+            } else {
+                document.getElementById("managerSection").style.display = "none";
+                document.getElementById("collectorSection").style.display = "block";
+            }
+            loadTable();
         }
 
         function saveSettings() {
             let waNum = document.getElementById("companyWaInput").value.trim();
-            if(!waNum) {
-                alert("الرجاء إدخال رقم صحيح!");
-                return;
-            }
+            if(!waNum) { alert("الرجاء إدخال رقم صحيح!"); return; }
             localStorage.setItem("companyWa", waNum);
-            alert("✅ تم حفظ رقم واتساب الشركة بنجاح!");
+            alert("تم حفظ رقم واتساب الشركة بنجاح!");
         }
 
         function addData() {
             let name = document.getElementById("clientName").value.trim();
             let amount = document.getElementById("amount").value.trim();
-            if(!name || !amount) {
-                alert("الرجاء ملء كافة الحقول!");
-                return;
-            }
+            if(!name || !amount) { alert("الرجاء ملء كافة الحقول!"); return; }
+            
             let records = JSON.parse(localStorage.getItem("shippData") || "[]");
-            records.push({ type: document.getElementById("type").value, name: name, amount: amount, status: "مقبوض", date: new Date().toLocaleString('ar-EG') });
+            records.push({ 
+                collector: currentCollectorLoggedIn, 
+                type: document.getElementById("type").value, 
+                name: name, 
+                amount: amount, 
+                status: "مقبوض", 
+                date: new Date().toLocaleString('ar-EG') 
+            });
             localStorage.setItem("shippData", JSON.stringify(records));
             document.getElementById("clientName").value = "";
             document.getElementById("amount").value = "";
             loadTable();
-            alert("✅ تم تسجيل الحركة بنجاح!");
+            alert("تم تسجيل الحركة بنجاح!");
         }
 
         function cancelRecord(i) {
@@ -166,9 +286,7 @@
                 records[i].status = "ملغي: " + reason;
                 localStorage.setItem("shippData", JSON.stringify(records));
                 loadTable();
-            } else {
-                alert("يجب إدخال سبب للإلغاء ولن يتم إلغاء الوصل دونه!");
-            }
+            } else { alert("يجب إدخال سبب للإلغاء ولن يتم إلغاء الوصل دونه!"); }
         }
 
         function loadTable() {
@@ -176,19 +294,21 @@
             let tbody = document.getElementById("tableBody");
             tbody.innerHTML = "";
             if(records.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="5" style="color:#94a3b8; padding: 20px;">لا توجد حركات مسجلة حالياً</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="6" style="color:#94a3b8; padding: 20px;">لا توجد حركات مسجلة حالياً</td></tr>`;
                 return;
             }
             records.forEach((r, i) => {
                 let isCanceled = r.status.includes('ملغي');
+                let rowCollector = r.collector || "جابي 1";
                 tbody.innerHTML += `
                     <tr>
+                        <td><b>${rowCollector}</b></td>
                         <td><b>${r.type}</b></td>
                         <td>${r.name}</td>
                         <td>${r.amount}</td>
-                        <td><span style="color: ${isCanceled ? 'red' : 'green'}; font-weight: bold;">${r.status}</span></td>
+                        <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${r.status}</span></td>
                         <td>
-                            ${role==='collector' && !isCanceled ? `<button onclick="cancelRecord(${i})" class="badge-red" style="border:none; cursor:pointer;">إلغاء الوصل</button>` : '<span style="color:#cbd5e1; font-size:12px;">معتمد</span>'}
+                            ${role==='collector' && !isCanceled && r.collector === currentCollectorLoggedIn ? `<button onclick="cancelRecord(${i})" class="badge-red">إلغاء الوصل</button>` : '<span style="color:#cbd5e1; font-size:12px;">معتمد</span>'}
                         </td>
                     </tr>`;
             });
@@ -202,7 +322,8 @@
                 let msg = "📊 تقرير شركة العالمية اليومي المغلق:%0A";
                 let total = 0;
                 records.forEach(r => {
-                    msg += `- ${r.type}: ${r.amount} (${r.name}) [${r.status}]%0A`;
+                    let colName = r.collector || "جابي 1";
+                    msg += `- [${colName}] ${r.type}: ${r.amount} (${r.name}) [${r.status}]%0A`;
                     if(!r.status.includes('ملغي') && r.type !== 'مصروف') total += parseFloat(r.amount) || 0;
                 });
                 msg += `%0A💰 إجمالي الصندوق: ${total}`;
@@ -211,7 +332,7 @@
                 
                 localStorage.removeItem("shippData");
                 loadTable();
-                alert("🔒 تم إغلاق الصندوق وأرشفة البيانات بنجاح.");
+                alert("تم إغلاق الصندوق وأرشفة البيانات بنجاح.");
             }
         }
     </script>
