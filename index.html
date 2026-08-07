@@ -71,8 +71,7 @@
         <div class="form-group" id="collectorSelectGroup" style="display:none;">
             <label>اختر اسم الجابي:</label>
             <select id="loginCollectorName">
-                <option value="جابي 1">جابي 1</option>
-                <option value="جابي 2">جابي 2</option>
+                <!-- تعبئة تلقائية من السحابة -->
             </select>
         </div>
 
@@ -86,7 +85,7 @@
     <div id="appDiv" class="card" style="display:none;">
         <div class="top-bar-actions">
             <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 تبديل النمط</button>
-            <button class="btn-logout" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+            <button class="btn-logout" onclick="logoutSystem()"><i class="fas fa-sign-out-alt"></i> تسجيل خروج</button>
         </div>
         
         <div class="app-header">
@@ -130,16 +129,32 @@
 
         <!-- لوحة المدير المتقدمة -->
         <div id="managerSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> كشوفات المبالغ بحوزة الجباة مع زر التسوية النقدية ($)</h3>
+            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> كشوفات المبالغ بحوزة الجباة والتسوية النقدية ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
             
+            <!-- قسم إدارة الجباة وإضافة جابي جديد وتغيير الباسوردات -->
+            <div style="background: var(--card-bg); padding: 18px; border-radius: 14px; border: 1px solid var(--border); margin-top: 20px;">
+                <h4 style="margin:0 0 12px 0; color: var(--primary-dark); font-size:14px;"><i class="fas fa-users-cog"></i> إعدادات النظام وإدارة الجباة وكلمات المرور:</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                    <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                        <label style="font-size:12px;">إضافة جابي جديد:</label>
+                        <input type="text" id="newCollectorName" placeholder="اسم الجابي الجديد..." style="margin-bottom: 8px; padding: 8px;">
+                        <input type="password" id="newCollectorPass" placeholder="كلمة مروره..." style="margin-bottom: 8px; padding: 8px;">
+                        <button class="btn btn-gold" style="padding: 8px; font-size: 13px;" onclick="addNewCollector()">إضافة الجابي للسحابة</button>
+                    </div>
+                    <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                        <label style="font-size:12px;">تغيير كلمة مرور المدير:</label>
+                        <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة للمدير..." style="margin-bottom: 8px; padding: 8px;">
+                        <button class="btn" style="padding: 8px; font-size: 13px;" onclick="updateAdminPassword()">تحديث باسورد المدير</button>
+                    </div>
+                </div>
+            </div>
+
             <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
                 <div style="flex: 1; margin-bottom: 0;">
                     <label style="margin-bottom: 5px;"><i class="fas fa-filter"></i> فلتر عرض الجدول حسب الجابي:</label>
                     <select id="filterCollector" onchange="filterTableByManager()">
                         <option value="ALL">عرض كل الحركات (الكل)</option>
-                        <option value="جابي 1">حركات جابي 1 فقط</option>
-                        <option value="جابي 2">حركات جابي 2 فقط</option>
                     </select>
                 </div>
             </div>
@@ -192,6 +207,12 @@
         let role = "";
         let currentCollectorLoggedIn = "";
         let globalRecords = [];
+        let collectorsList = [];
+        let unsubTrans = null;
+        let unsubCols = null;
+
+        // تحميل الباسوردات أو إعداداتها الافتراضية محلياً أو سحابياً
+        let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
 
         function toggleTheme() {
             let body = document.body;
@@ -214,17 +235,31 @@
         function login() {
             let p = document.getElementById("pass").value;
             if (role === 'manager') {
-                if (p === "admin123") {
+                if (p === adminPass) {
                     currentCollectorLoggedIn = "الحاج بلال عبد الرزاق (المدير)";
                     startApp("مدير النظام (الحاج بلال عبد الرزاق)");
-                } else { alert("كلمة مرور المدير غير صحيحة! (admin123)"); }
+                } else { alert("كلمة مرور المدير غير صحيحة!"); }
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
-                if (p === "collector123") {
+                let colObj = collectorsList.find(c => c.name === selectedName);
+                let correctPass = colObj ? colObj.pass : "collector123";
+                
+                if (p === correctPass) {
                     currentCollectorLoggedIn = selectedName;
                     startApp(selectedName);
-                } else { alert("كلمة مرور الجابي غير صحيحة! (collector123)"); }
+                } else { alert("كلمة مرور الجابي غير صحيحة!"); }
             }
+        }
+
+        function logoutSystem() {
+            if(unsubTrans) unsubTrans();
+            if(unsubCols) unsubCols();
+            role = "";
+            currentCollectorLoggedIn = "";
+            document.getElementById("pass").value = "";
+            document.getElementById("appDiv").style.display = "none";
+            document.getElementById("loginDiv").style.display = "block";
+            setRole('manager');
         }
 
         function startApp(titleName) {
@@ -239,7 +274,67 @@
                 document.getElementById("managerSection").style.display = "none";
                 document.getElementById("collectorSection").style.display = "block";
             }
+            listenToCollectors();
             listenToDatabase();
+        }
+
+        function listenToCollectors() {
+            unsubCols = db.collection("collectors").onSnapshot((snapshot) => {
+                collectorsList = [];
+                snapshot.forEach((doc) => {
+                    collectorsList.push({ id: doc.id, ...doc.data() });
+                });
+                // إذا لم يوجد جباة بعد، نقوم بإنشاء جابي 1 وجابي 2 افتراضياً بالسحابة
+                if(collectorsList.length === 0) {
+                    db.collection("collectors").doc("collector1").set({name: "جابي 1", pass: "collector123"});
+                    db.collection("collectors").doc("collector2").set({name: "جابي 2", pass: "collector123"});
+                    return;
+                }
+                updateCollectorsUI();
+            });
+        }
+
+        function updateCollectorsUI() {
+            let selectLogin = document.getElementById("loginCollectorName");
+            let filterSelect = document.getElementById("filterCollector");
+            
+            selectLogin.innerHTML = "";
+            let currentFilterVal = filterSelect.value;
+            filterSelect.innerHTML = `<option value="ALL">عرض كل الحركات (الكل)</option>`;
+
+            collectorsList.forEach(c => {
+                selectLogin.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                filterSelect.innerHTML += `<option value="${c.name}">حركات ${c.name} فقط</option>`;
+            });
+            filterSelect.value = currentFilterVal;
+            if(role === 'manager') renderUI(globalRecords);
+        }
+
+        function addNewCollector() {
+            let name = document.getElementById("newCollectorName").value.trim();
+            let pass = document.getElementById("newCollectorPass").value.trim();
+            if(!name || !pass) { alert("الرجاء إدخال اسم الجابي وكلمة المرور!"); return; }
+            
+            let docId = "col_" + Date.now();
+            db.collection("collectors").doc(docId).set({
+                name: name,
+                pass: pass
+            }).then(() => {
+                document.getElementById("newCollectorName").value = "";
+                document.getElementById("newCollectorPass").value = "";
+                alert(`تمت إضافة الجابي (${name}) بنجاح للسحابة!`);
+            }).catch(err => {
+                alert("خطأ: " + err.message);
+            });
+        }
+
+        function updateAdminPassword() {
+            let newPass = document.getElementById("newAdminPass").value.trim();
+            if(!newPass) { alert("الرجاء إدخال كلمة المرور الجديدة!"); return; }
+            adminPass = newPass;
+            localStorage.setItem("glb_admin_pass", newPass);
+            document.getElementById("newAdminPass").value = "";
+            alert("تم تحديث كلمة مرور المدير بنجاح!");
         }
 
         function addData() {
@@ -327,7 +422,7 @@
         }
 
         function listenToDatabase() {
-            db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+            unsubTrans = db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
                 globalRecords = [];
                 snapshot.forEach((doc) => {
                     globalRecords.push({ id: doc.id, ...doc.data() });
@@ -392,7 +487,9 @@
             let alertLogBox = document.getElementById("alertLog");
             container.innerHTML = "";
 
-            let summaryData = { "جابي 1": 0, "جابي 2": 0 };
+            let summaryData = {};
+            collectorsList.forEach(c => { summaryData[c.name] = 0; });
+
             let alertHtml = "";
 
             records.forEach(r => {
