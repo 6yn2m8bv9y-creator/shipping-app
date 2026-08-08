@@ -402,15 +402,14 @@
             }
         }
 
-        // دالة التسوية المطورة مع مطابقة الصندوق (العجز والزيادة)
         function settleCollector(collectorName, expectedAmount) {
             let actualInput = prompt(`المبلغ المتوقع بصندوق (${collectorName}) حسب النظام هو: $${expectedAmount.toFixed(2)}\n\nكم المبلغ الفعلي الموجود بيد الجابي الآن؟`);
-            if(actualInput === null) return; // إلغاء العملية
+            if(actualInput === null) return;
             
             let actualAmount = parseFloat(actualInput);
             if(isNaN(actualAmount)) { alert("الرجاء إدخال رقم صحيح!"); return; }
 
-            let diff = actualAmount - expectedAmount; // الفرق (موجب = زيادة، سالب = عجز)
+            let diff = actualAmount - expectedAmount;
             let diffText = "";
             if(diff === 0) diffText = "مطابق تماماً ($0.00)";
             else if(diff > 0) diffText = `زيادة بقيمة (+$${diff.toFixed(2)})`;
@@ -571,10 +570,6 @@
                     if(summaryData[col] !== undefined) {
                         if(r.type === 'مصروف') summaryData[col] -= amt;
                         else if(r.type === 'حوالة' || r.type === 'شحن') summaryData[col] += amt;
-                        // إذا كانت تسوية قديمة بتصفر الصندوق أو تحسب على حسب الحالة
-                        if(r.status === 'تسوية وإبراء ذمة' && r.type === 'تسوية') {
-                            // لو حابب تتأكد أن التسوية بتصفر الحساب أو تبدأ سطر جديد، السيستم يحسب الحركات التصاعدية
-                        }
                     }
                 }
             });
@@ -591,6 +586,17 @@
                     </div>`;
             }
             alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء مسجلة اليوم.";
+        }
+    </script>
+
+    <!-- تفعيل ميزة العمل بدون إنترنت (Offline PWA) -->
+    <script>
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then((reg) => console.log('Service Worker registered successfully!'))
+                    .catch((err) => console.log('Service Worker registration failed: ', err));
+            });
         }
     </script>
 </body>
