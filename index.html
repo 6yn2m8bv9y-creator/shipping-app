@@ -4,70 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شركة العالمية - الإدارة الحديثة</title>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        /* نمط ألوان مشرق وعصري (Light & Clean Theme) */
         :root { 
             --bg-color: #f1f5f9; --card-bg: #ffffff; --text-main: #1e293b; 
-            --accent-blue: #0ea5e9; --accent-gold: #ca8a04; --accent-green: #22c55e;
-            --danger: #f43f5e; --border-color: #e2e8f0;
+            --accent-blue: #0ea5e9; --accent-gold: #ca8a04; --border-color: #e2e8f0;
         }
         body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; direction: rtl; }
         .container { max-width: 900px; margin: auto; }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 20px; }
         
-        /* كرت الأساسي */
-        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        /* اللوغو والترويسة */
+        .brand-header { text-align: center; margin-bottom: 20px; }
+        .logo-badge { width: 70px; height: 70px; margin: 0 auto 10px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 30px; }
         
-        /* التبويبات الأفقية (الآن بصف واحد متساوي) */
+        /* التبويبات */
         .manager-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
-        .m-tab-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; background: #f8fafc; color: #64748b; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; border: 1px solid var(--border-color); }
+        .m-tab-btn { flex: 1; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; background: white; color: #64748b; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
         .m-tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        /* الأزرار والحقول */
-        input, select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; }
-        button.btn-action { background: var(--accent-blue); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
-        
-        /* الجدول */
         table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { background: #f8fafc; padding: 12px; border-bottom: 2px solid var(--border-color); color: #475569; }
-        td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: center; }
-        
-        /* تنسيقات إضافية */
-        .summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .stat-card { background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color); }
+        th { background: #f8fafc; padding: 12px; border-bottom: 2px solid var(--border-color); color: #475569; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: center; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <div class="container" id="appRoot">
-        <!-- سيتم التحكم بالمحتوى هنا -->
-        <div id="authScreen" class="card" style="text-align:center;">
-            <h3>شركة العالمية للإدارة</h3>
-            <select id="roleSelect" onchange="checkRole()">
-                <option value="manager">مدير</option>
-                <option value="collector">جابي</option>
-            </select>
-            <input type="password" id="passInput" placeholder="كلمة المرور">
-            <button class="btn-action" onclick="login()">دخول</button>
+    <div class="container">
+        <!-- اللوغو أعدناه -->
+        <div class="brand-header">
+            <div class="logo-badge"><i class="fas fa-globe-americas"></i></div>
+            <h2 style="margin:0;">شركة العالمية</h2>
+            <p style="color:#64748b; font-size:12px;">إدارة الحاج بلال عبد الرزاق</p>
         </div>
 
-        <div id="mainApp" class="card" style="display:none;">
-            <div id="managerSection" style="display:none;">
-                <div class="manager-tabs">
-                    <button class="m-tab-btn active" onclick="showTab('tab1', this)"><i class="fas fa-wallet"></i> الصناديق</button>
-                    <button class="m-tab-btn" onclick="showTab('tab2', this)"><i class="fas fa-cogs"></i> الإعدادات</button>
-                </div>
-                
-                <div id="tab1" class="tab-content active">
-                    <div class="summary-box" id="collectorsSummary"></div>
-                </div>
-                <div id="tab2" class="tab-content">
-                    <p>إعدادات النظام...</p>
-                </div>
+        <div class="card">
+            <div class="manager-tabs">
+                <button class="m-tab-btn active" onclick="showTab('tab1', this)"><i class="fas fa-wallet"></i> الصناديق</button>
+                <button class="m-tab-btn" onclick="showTab('tab2', this)"><i class="fas fa-cogs"></i> الإعدادات</button>
+            </div>
+            
+            <div id="tab1" class="tab-content active">
+                <p style="text-align:center; color:#64748b;">جاري تحميل بيانات الصناديق...</p>
+            </div>
+            <div id="tab2" class="tab-content">
+                <p style="text-align:center; color:#64748b;">إعدادات النظام والتحكم...</p>
             </div>
 
             <table>
@@ -79,21 +62,20 @@
                         <th>الإجراء</th>
                     </tr>
                 </thead>
-                <tbody id="tableBody"></tbody>
+                <tbody id="tableBody">
+                    <tr><td colspan="4" style="color:#94a3b8;">لا توجد بيانات حالياً</td></tr>
+                </tbody>
             </table>
         </div>
     </div>
 
     <script>
-        // إعدادات بسيطة
         function showTab(id, btn) {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.querySelectorAll('.m-tab-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(id).classList.add('active');
             btn.classList.add('active');
         }
-        
-        function login() { document.getElementById('authScreen').style.display='none'; document.getElementById('mainApp').style.display='block'; document.getElementById('managerSection').style.display='block'; }
     </script>
 </body>
 </html>
