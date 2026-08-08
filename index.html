@@ -133,17 +133,29 @@
             <div style="background: var(--card-bg); padding: 18px; border-radius: 14px; border: 1px solid var(--border); margin-top: 20px;">
                 <h4 style="margin:0 0 12px 0; color: var(--primary-dark); font-size:14px;"><i class="fas fa-users-cog"></i> إعدادات النظام وإدارة الجباة وكلمات المرور:</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
+                    
+                    <!-- إضافة جابي جديد -->
                     <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
                         <label style="font-size:12px;">إضافة جابي جديد:</label>
                         <input type="text" id="newCollectorName" placeholder="اسم الجابي الجديد..." style="margin-bottom: 8px; padding: 8px;">
                         <input type="password" id="newCollectorPass" placeholder="كلمة مروره..." style="margin-bottom: 8px; padding: 8px;">
                         <button class="btn btn-gold" style="padding: 8px; font-size: 13px;" onclick="addNewCollector()">إضافة الجابي للسحابة</button>
                     </div>
+
+                    <!-- تحديث باسورد المدير -->
                     <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
                         <label style="font-size:12px;">تغيير كلمة مرور المدير:</label>
                         <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة للمدير..." style="margin-bottom: 8px; padding: 8px;">
                         <button class="btn" style="padding: 8px; font-size: 13px;" onclick="updateAdminPassword()">تحديث باسورد المدير</button>
                     </div>
+
+                    <!-- إعدادات رقم واتساب الشركة -->
+                    <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                        <label style="font-size:12px;"><i class="fab fa-whatsapp" style="color:#25d366;"></i> رقم واتساب الشركة المعتمد:</label>
+                        <input type="text" id="companyPhoneInput" placeholder="مثال: 963912345678" style="margin-bottom: 8px; padding: 8px;">
+                        <button class="btn" style="background:#25d366; padding: 8px; font-size: 13px;" onclick="updateCompanyPhone()">حفظ رقم الواتساب</button>
+                    </div>
+
                 </div>
             </div>
 
@@ -209,6 +221,7 @@
         let unsubCols = null;
 
         let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
+        let companyPhone = localStorage.getItem("glb_company_phone") || "963912345678"; // رقم افتراضي قابل للتعديل
 
         function toggleTheme() {
             let body = document.body;
@@ -278,6 +291,8 @@
             if(role === 'manager') {
                 document.getElementById("managerSection").style.display = "block";
                 document.getElementById("collectorSection").style.display = "none";
+                // تعبئة حقل الواتساب بالرقم الحالي المحفوظ
+                document.getElementById("companyPhoneInput").value = companyPhone;
             } else {
                 document.getElementById("managerSection").style.display = "none";
                 document.getElementById("collectorSection").style.display = "block";
@@ -337,11 +352,19 @@
 
         function updateAdminPassword() {
             let newPass = document.getElementById("newAdminPass").value.trim();
-            if(!newPass) { alert("الرجاء إدخال كلمة المرور الجديدة!"); return; }
+            if(!newPass) { alert("الرجاء إدخال كلمة المرور الجديدة للمدير!"); return; }
             adminPass = newPass;
             localStorage.setItem("glb_admin_pass", newPass);
             document.getElementById("newAdminPass").value = "";
             alert("تم تحديث كلمة مرور المدير بنجاح!");
+        }
+
+        function updateCompanyPhone() {
+            let newPhone = document.getElementById("companyPhoneInput").value.trim();
+            if(!newPhone) { alert("الرجاء إدخال رقم صحيح للواتساب!"); return; }
+            companyPhone = newPhone;
+            localStorage.setItem("glb_company_phone", newPhone);
+            alert("تم تحديث وحفظ رقم واتساب الشركة المعتمد بنجاح!");
         }
 
         function addData() {
@@ -382,9 +405,8 @@
             }
         }
 
-        // تسوية الصندوق وإرسال السند عبر واتساب للكمبيوتر أو رقم الشركة
         function settleCollector(collectorName) {
-            let confirmSettle = confirm(`هل أنت متأكد من تسوية واستلام كافة المبالغ من صندوق (${collectorName}) وتوليد سند التسوية؟`);
+            let confirmSettle = confirm(`هل أنت متأكد من تسوية واستلام كافة المبالغ من صندوق (${collectorName}) وإرسال السند لواتساب الشركة؟`);
             if(confirmSettle) {
                 db.collection("shippings").add({
                     code: "SETTLE-" + Math.floor(100 + Math.random() * 900),
@@ -424,14 +446,11 @@
             msg += `✍️ اعتماد المدير: الحاج بلال عبد الرزاق\n`;
             msg += `🔏 توقيع الجابي: ${collectorName}\n`;
 
-            // ضع هنا رقم هاتفك أو رقم الشركة الأساسي (مثلاً مع رمز الدولة)
-            let companyPhone = "963XXXXXXXXX"; // استبدل X برقمك الصحيح
-
             let encodedMsg = encodeURIComponent(msg);
             let whatsappUrl = `https://wa.me/${companyPhone}?text=${encodedMsg}`;
             
             window.open(whatsappUrl, '_blank');
-            alert(`تم تصفير الصندوق بنجاح وتم تحويل تفاصيل سند التسوية إلى واتساب الشركة للطباعة الفورية على الكمبيوتر!`);
+            alert(`تم تصفير الصندوق بنجاح وتحويل سند التسوية إلى رقم واتساب الشركة (${companyPhone}) لتطبعه بكل سهولة على الكمبيوتر!`);
         }
 
         function duplicateRecord(type, name, amount) {
