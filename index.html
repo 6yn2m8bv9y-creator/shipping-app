@@ -402,7 +402,7 @@
             
             records.forEach(r => { 
                 let disc = parseFloat(r.discount) > 0 ? ` | حسم: $${r.discount}` : '';
-                content += `${r.code} | ${r.type} | $${r.amount}${disc}\n`; 
+                content += `[${r.code}] ${r.name} (${r.type}) : $${r.amount}${disc}\n`; 
             });
             
             content += `-------------------\nالمتوقع: $${expectedAmount.toFixed(2)}\nالفعلي: $${actualAmount.toFixed(2)}\nالنتيجة: ${diffText}`;
@@ -479,8 +479,8 @@
                 
                 tbody.innerHTML += `
                     <tr>
-                        <td><span class="receipt-code">${r.code || 'GLB'}</span></td>
-                        <td><b>${r.collector}</b></td>
+                        <td><span class="receipt-code">${r.code || 'GLB'}</span><br><small>${r.name}</small></td>
+                        <td><b>${r.collector}</b><br><span style="font-size:10px; color:var(--sub-text);">${r.type}</span></td>
                         <td>$${r.amount}${discountDisplay}</td>
                         <td>
                             ${r.receiptImg ? `<button onclick="showReceiptModal('${r.receiptImg}')" style="background:var(--accent-blue); color:white; border:none; padding:3px 6px; border-radius:5px; cursor:pointer;"><i class="fas fa-image"></i></button>` : ''}
