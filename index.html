@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>شركة العالمية - نظام الإدارة السحابي</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
@@ -21,7 +20,7 @@
         }
         body { 
             font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%); 
+            background: #0f172a; 
             min-height: 100vh;
             margin: 0; padding: 15px; direction: rtl; color: var(--text-color); 
         }
@@ -324,7 +323,6 @@
                 }
                 updateCollectorsUI();
             }, (err) => {
-                console.log("استخدام القائمة الافتراضية للجباة");
                 updateCollectorsUI();
             });
         }
@@ -461,72 +459,68 @@
                 date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
             });
 
-            generateAndShareSettlementPDF(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
+            // استخدام طباعة المتصفح السريعة والمستقرة لتصدير تقرير التسوية فوراً بدون شاشات سودا
+            printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
             alert("تمت التسوية والأرشفة وتصفير الصندوق بنجاح!");
         }
 
-        async function generateAndShareSettlementPDF(collectorName, expectedAmount, actualAmount, diffText, records) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('p', 'mm', 'a4');
+        function printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, records) {
+            let printWindow = window.open('', '_blank');
+            let html = `
+                <html dir="rtl">
+                <head>
+                    <title>سند تسوية صندوق - ${collectorName}</title>
+                    <style>
+                        body { font-family: Tahoma, sans-serif; padding: 20px; color: #000; }
+                        h2, h3 { text-align: center; margin: 5px 0; }
+                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; }
+                        th { background: #eee; }
+                        .summary { margin-top: 15px; font-weight: bold; font-size: 14px; }
+                    </style>
+                </head>
+                <body>
+                    <h2>شركة العالمية للشحن والحوالات</h2>
+                    <h3>سند تسوية صندوق الجابي: ${collectorName}</h3>
+                    <p style="text-align:center; font-size:12px;">تاريخ التسوية: ${new Date().toLocaleDateString()} | المدير: الحاج بلال عبد الرزاق</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>رقم الوصل</th>
+                                <th>النوع</th>
+                                <th>الزبون / البيان</th>
+                                <th>المبلغ ($)</th>
+                            </tr>
+                        </thead>
+                        <tbody>`;
             
-            doc.setFont("helvetica", "bold");
-            doc.setFontSize(15);
-            doc.text("AL ALEMIYE - Al Shahan & Hawalat", 105, 18, { align: "center" });
-            
-            doc.setFontSize(12);
-            doc.text(`Cash Settlement Voucher - Collector: ${collectorName}`, 105, 26, { align: "center" });
-            
-            doc.setFontSize(10);
-            doc.text(`Date: ${new Date().toLocaleDateString('en-GB')}`, 20, 38);
-            doc.text(`Manager Approval: Haj Bilal Abdel Razzaq`, 20, 46);
-            doc.line(15, 52, 195, 52);
-            
-            let yPos = 60;
-            doc.text("Receipt", 170, yPos);
-            doc.text("Type", 130, yPos);
-            doc.text("Client", 80, yPos);
-            doc.text("Net ($)", 25, yPos);
-            doc.line(15, yPos + 3, 195, yPos + 3);
-            
-            yPos += 8;
-            records.forEach((r) => {
-                if(yPos > 250) { doc.addPage(); yPos = 20; }
-                doc.text(`${r.code || 'GLB'}`, 170, yPos);
-                doc.text(`${r.type}`, 130, yPos);
-                doc.text(`${r.name}`, 80, yPos);
-                doc.text(`$${r.amount}`, 25, yPos);
-                yPos += 7;
+            records.forEach(r => {
+                html += `<tr>
+                    <td>${r.code || 'GLB'}</td>
+                    <td>${r.type}</td>
+                    <td>${r.name}</td>
+                    <td>$${r.amount}</td>
+                </tr>`;
             });
-            
-            yPos += 8;
-            if(yPos > 240) { doc.addPage(); yPos = 20; }
-            doc.line(15, yPos, 195, yPos);
-            yPos += 8;
-            
-            doc.text(`Expected System Amount: $${expectedAmount.toFixed(2)}`, 20, yPos);
-            yPos += 7;
-            doc.text(`Actual Handed Amount: $${actualAmount.toFixed(2)}`, 20, yPos);
-            yPos += 7;
-            doc.text(`Audit Result: ${diffText}`, 20, yPos);
-            
-            yPos += 15;
-            doc.text("Manager: Haj Bilal", 20, yPos);
-            doc.text("Collector: ....................", 120, yPos);
 
-            const pdfBlob = doc.output('blob');
-            const fileName = `Settlement_${collectorName}_${Date.now()}.pdf`;
-            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
-
-            if (navigator.canShare && navigator.canShare({ files: [file] })) {
-                try {
-                    await navigator.share({ title: 'سند تسوية', text: `تسوية صندوق ${collectorName}`, files: [file] });
-                    return;
-                } catch (e) {}
-            }
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(pdfBlob);
-            link.download = fileName;
-            link.click();
+            html += `</tbody></table>
+                    <div class="summary">
+                        <p>المبلغ المتوقع بالنظام: $${expectedAmount.toFixed(2)}</p>
+                        <p>المبلغ الفعلي المسلم: $${actualAmount.toFixed(2)}</p>
+                        <p>نتيجة التدقيق: ${diffText}</p>
+                    </div>
+                    <br><br>
+                    <div style="display: flex; justify-content: space-between;">
+                        <span>توقيع المدير: الحاج بلال</span>
+                        <span>توقيع الجابي: .................</span>
+                    </div>
+                    <script>
+                        window.onload = function() { window.print(); window.close(); }
+                    <\/script>
+                </body>
+                </html>`;
+            printWindow.document.write(html);
+            printWindow.document.close();
         }
 
         function cancelRecord(docId) {
@@ -548,7 +542,6 @@
                 snapshot.forEach((doc) => { globalRecords.push({ id: doc.id, ...doc.data() }); });
                 renderUI(globalRecords);
             }, (error) => {
-                console.log("خطأ في جلب قاعدة البيانات، يتم العرض الفارغ");
                 renderUI([]);
             });
         }
@@ -625,7 +618,7 @@
                     <div class="collector-card">
                         <h4 style="margin:0 0 6px 0; color:var(--gold-dark); font-size:13px;">صندوق: ${colName}</h4>
                         <p style="margin:0 0 8px 0; font-size:18px; font-weight:bold;">$${balance.toFixed(2)}</p>
-                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-file-pdf"></i> تسوية وأرشفة</button>
+                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-print"></i> تسوية وطباعة السند</button>
                     </div>`;
             }
             if(alertLogBox) alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
