@@ -41,6 +41,7 @@
         .receipt-code { font-family: monospace; background: #e0f2fe; padding: 3px 6px; border-radius: 6px; font-weight: bold; color: var(--accent-blue); }
         .badge-red { color: var(--danger); background: #fee2e2; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 10px; border: none; cursor: pointer; }
         .btn-settle { background: var(--success); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        #offlineBanner { display: none; background: #fee2e2; color: var(--danger); padding: 8px; text-align: center; font-size: 11px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
@@ -73,6 +74,8 @@
 
         <!-- لوحة التحكم الداخلية -->
         <div id="appDiv" class="card" style="display:none;">
+            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت.</div>
+            
             <div class="app-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
                     <div style="width: 35px; height: 35px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
@@ -205,6 +208,11 @@
         firebase.initializeApp(firebaseConfig);
         const db = firebase.firestore();
 
+        // تفعيل التخزين المؤقت أوفلاين في فايربيز تلقائياً
+        db.enablePersistence().catch((err) => {
+            console.log("وضع الأوفلاين غير مدعوم بالكامل على هذا المتصفح");
+        });
+
         let role = "";
         let currentCollectorLoggedIn = "";
         let globalRecords = [];
@@ -213,6 +221,10 @@
         let unsubCols = null;
 
         let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
+
+        // مراقبة حالة الإنترنت لتنبيه المستخدم
+        window.addEventListener('online', () => { document.getElementById('offlineBanner').style.display = 'none'; });
+        window.addEventListener('offline', () => { document.getElementById('offlineBanner').style.display = 'block'; });
 
         function switchManagerTab(tabId, btnElement) {
             document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
@@ -362,7 +374,9 @@
                     document.getElementById("amount").value = "";
                     document.getElementById("discount").value = "0";
                     document.getElementById("receiptImage").value = "";
-                    alert("تم الحفظ بنجاح: " + receiptCode);
+                    alert("تم حفظ الحركة بنجاح: " + receiptCode);
+                }).catch((err) => {
+                    alert("تعذر الحفظ السحابي، تأكد من الاتصال.");
                 });
             };
 
