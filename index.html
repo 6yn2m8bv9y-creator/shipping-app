@@ -50,7 +50,6 @@
         .type-شحن { background: #dbeafe; color: #1e40af; }
         .type-مصروف { background: #fee2e2; color: #991b1b; }
 
-        /* تنسيق نموذج الطباعة الاحترافي (PDF) */
         #printInvoiceModal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 10000; align-items: center; justify-content: center; }
         .print-container { background: #ffffff; color: #0f172a; width: 750px; max-width: 95%; max-height: 90vh; overflow-y: auto; padding: 40px; border-radius: 16px; box-shadow: 0 15px 40px rgba(0,0,0,0.3); direction: rtl; text-align: right; position: relative; }
         
@@ -228,17 +227,17 @@
                         <th style="border:1px solid #cbd5e1; padding:10px;">الوقت</th>
                     </tr>
                 </thead>
-                <tbody id="printTableBody">
-                    <!-- تعبئة ديناميكية للحركات -->
-                </tbody>
+                <tbody id="printTableBody"></tbody>
             </table>
 
-            <div style="display: flex; justify-content: space-between; margin-top: 40px; font-size: 14px; text-align: center;">
-                <div style="border-top: 1px solid #cbd5e1; width: 200px; padding-top: 8px;">
-                    توقيع الجابي المختص
+            <div style="display: flex; justify-content: space-between; margin-top: 50px; font-size: 14px; text-align: center;">
+                <div style="border-top: 2px solid #0f172a; width: 220px; padding-top: 10px;">
+                    توقيع الجابي:<br>
+                    <span id="printCollectorSignature" style="font-weight: bold;"></span>
                 </div>
-                <div style="border-top: 1px solid #cbd5e1; width: 200px; padding-top: 8px;">
-                    اعتماد المدير: الحاج بلال عبد الرزاق
+                <div style="border-top: 2px solid #0f172a; width: 220px; padding-top: 10px;">
+                    اعتماد المدير:<br>
+                    <span style="font-weight: bold;">الحاج بلال عبد الرزاق</span>
                 </div>
             </div>
 
@@ -290,6 +289,7 @@
             }
         }
 
+        // تم تعديل هذه الدالة لتتحقق من الباسورد مباشرة من قاعدة البيانات سحابياً
         function login() {
             let p = document.getElementById("pass").value;
             if (role === 'manager') {
@@ -299,13 +299,26 @@
                 } else { alert("كلمة مرور المدير غير صحيحة!"); }
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
-                let colObj = collectorsList.find(c => c.name === selectedName);
-                let correctPass = colObj ? colObj.pass : "collector123";
-                
-                if (p === correctPass) {
-                    currentCollectorLoggedIn = selectedName;
-                    startApp(selectedName);
-                } else { alert("كلمة مرور الجابي غير صحيحة!"); }
+                if(!selectedName) { alert("الرجاء اختيار جابي من القائمة!"); return; }
+
+                // جلب كلمة المرور الخاصة بهذا الجابي من السحابة مباشرة
+                db.collection("collectors").where("name", "==", selectedName).get().then((snapshot) => {
+                    if(snapshot.empty) {
+                        alert("الجابي غير موجود بالسحابة!");
+                        return;
+                    }
+                    let colData = snapshot.docs[0].data();
+                    let correctPass = colData.pass || "collector123";
+
+                    if (p === correctPass) {
+                        currentCollectorLoggedIn = selectedName;
+                        startApp(selectedName);
+                    } else {
+                        alert("كلمة مرور الجابي غير صحيحة!");
+                    }
+                }).catch(err => {
+                    alert("خطأ في الاتصال بالسحابة: " + err.message);
+                });
             }
         }
 
@@ -435,7 +448,6 @@
         function settleCollector(collectorName) {
             let confirmSettle = confirm(`هل أنت متأكد من تسوية واستلام كافة المبالغ من صندوق (${collectorName}) وعرض سند التسوية للطباعة؟`);
             if(confirmSettle) {
-                // تصفير الصندوق وإصدار حركة تسوية سحابية
                 db.collection("shippings").add({
                     code: "SETTLE-" + Math.floor(100 + Math.random() * 900),
                     collector: collectorName,
@@ -474,6 +486,7 @@
             });
 
             document.getElementById("printCollectorName").innerText = collectorName;
+            document.getElementById("printCollectorSignature").innerText = collectorName;
             document.getElementById("printTotalAmount").innerText = "$" + totalSum.toFixed(2);
             document.getElementById("printDate").innerText = "تاريخ الإصدار: " + new Date().toLocaleDateString('ar-EG');
             document.getElementById("printInvoiceModal").style.display = "flex";
