@@ -3,626 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة العالمية - نظام الإدارة السحابي</title>
+    <title>شركة العالمية - الإدارة الحديثة</title>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
+        /* نمط ألوان مشرق وعصري (Light & Clean Theme) */
         :root { 
-            --primary: #0284c7; --gold: #d4af37; --gold-dark: #b45309; 
-            --dark: #0f172a; --success: #10b981; --danger: #ef4444; --border: #cbd5e1;
-            --card-bg: #ffffff; --text-color: #0f172a; --sub-text: #64748b;
+            --bg-color: #f1f5f9; --card-bg: #ffffff; --text-main: #1e293b; 
+            --accent-blue: #0ea5e9; --accent-gold: #ca8a04; --accent-green: #22c55e;
+            --danger: #f43f5e; --border-color: #e2e8f0;
         }
-        [data-theme="dark"] {
-            --primary: #38bdf8; --gold: #facc15; --gold-dark: #eab308;
-            --dark: #f8fafc; --border: #1e293b; --card-bg: #111827;
-            --text-color: #f8fafc; --sub-text: #94a3b8;
-        }
-        body { 
-            font-family: 'Segoe UI', Tahoma, sans-serif; 
-            background: #0f172a; 
-            min-height: 100vh;
-            margin: 0; padding: 15px; direction: rtl; color: var(--text-color); 
-        }
-        .card { max-width: 1050px; margin: auto; background: var(--card-bg); padding: 25px; border-radius: 22px; box-shadow: 0 15px 35px rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.2); }
-        .login-card { max-width: 420px; margin: 40px auto; background: var(--card-bg); padding: 35px 25px; border-radius: 22px; text-align: center; box-shadow: 0 15px 40px rgba(0,0,0,0.4); border-top: 5px solid var(--gold); border: 1px solid rgba(212,175,55,0.2); }
-        .brand-logo-badge { width: 80px; height: 80px; margin: 0 auto 12px auto; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; display: flex; align-items: center; justify-content: center; font-size: 35px; border: 2px solid var(--gold); }
-        .form-group { margin-bottom: 14px; text-align: right; }
-        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px; color: var(--text-color); }
-        input, select { width: 100%; padding: 10px 14px; border: 1.5px solid var(--border); border-radius: 10px; box-sizing: border-box; font-size: 13px; background: var(--card-bg); color: var(--text-color); outline: none; }
-        input:focus, select:focus { border-color: var(--gold); }
-        .btn { background: var(--primary); color: white; border: none; padding: 10px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; font-size: 13px; display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
-        .btn-gold { background: linear-gradient(135deg, #d4af37, #b45309); color: white; }
-        .btn-settle { background: var(--success); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: inline-flex; align-items: center; justify-content: center; gap: 4px; }
-        .btn-logout { background: rgba(239,68,68,0.1); color: var(--danger); width: auto; padding: 5px 10px; border-radius: 8px; border: 1px solid rgba(239,68,68,0.2); cursor: pointer; font-weight: 600; font-size: 11px; }
-        .top-bar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .theme-toggle-btn { background: var(--card-bg); color: var(--gold); border: 1.5px solid var(--border); padding: 5px 10px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 11px; }
-        .login-options { display: flex; gap: 8px; margin-bottom: 15px; }
-        .login-opt-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; flex: 1; font-size: 12px; }
-        .login-opt-btn.active { background: linear-gradient(135deg, #d4af37, #b45309); color: white; border-color: transparent; }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 20px; direction: rtl; }
+        .container { max-width: 900px; margin: auto; }
         
-        /* ترويسة التبويبات مرتبة أفقياً وبجانب بعضها بدون معجقة */
-        .manager-tabs { display: flex; gap: 8px; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; }
-        .m-tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 8px 16px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 12px; display: inline-flex; align-items: center; gap: 6px; flex: 1; justify-content: center; }
-        .m-tab-btn.active { background: linear-gradient(135deg, #d4af37, #b45309); color: white; border-color: transparent; font-weight: bold; }
+        /* كرت الأساسي */
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        
+        /* التبويبات الأفقية (الآن بصف واحد متساوي) */
+        .manager-tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .m-tab-btn { flex: 1; padding: 12px; border: none; border-radius: 12px; background: #f8fafc; color: #64748b; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 14px; border: 1px solid var(--border-color); }
+        .m-tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
         .tab-content { display: none; }
         .tab-content.active { display: block; }
 
-        .collector-summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
-        .collector-card { background: var(--card-bg); border: 1.5px solid var(--border); padding: 14px; border-radius: 12px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        th, td { border-bottom: 1px solid var(--border); padding: 10px; text-align: center; font-size: 12px; color: var(--text-color); }
-        th { background: rgba(212,175,55,0.08); color: var(--gold-dark); font-weight: 700; }
-        .badge-red { color: var(--danger); background: rgba(239,68,68,0.1); padding: 4px 8px; border-radius: 6px; font-weight: 600; font-size: 10px; border: 1px solid rgba(239,68,68,0.2); cursor: pointer; }
-        .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 12px; }
-        .owner-badge { background: linear-gradient(135deg, #d4af37, #b45309); color: white; padding: 3px 10px; border-radius: 15px; font-size: 10px; font-weight: bold; display: inline-block; margin-top: 3px; }
-        .receipt-code { font-family: monospace; background: rgba(2,132,199,0.1); padding: 3px 6px; border-radius: 6px; font-weight: bold; color: var(--primary); font-size: 11px; }
-        .archived-row { opacity: 0.5; background: rgba(100,116,139,0.05); }
-        .type-pill { padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: bold; }
-        .type-حوالة { background: rgba(16,185,129,0.15); color: #059669; }
-        .type-شحن { background: rgba(2,132,199,0.15); color: var(--primary); }
-        .type-مصروف { background: rgba(239,68,68,0.15); color: var(--danger); }
-        .type-تسوية { background: rgba(212,175,55,0.15); color: var(--gold-dark); }
-        .manager-settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
-        .setting-box { background: var(--card-bg); padding: 12px; border-radius: 10px; border: 1.5px solid var(--border); }
+        /* الأزرار والحقول */
+        input, select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 10px; margin-bottom: 10px; box-sizing: border-box; }
+        button.btn-action { background: var(--accent-blue); color: white; border: none; padding: 12px; border-radius: 10px; cursor: pointer; width: 100%; font-weight: bold; }
+        
+        /* الجدول */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { background: #f8fafc; padding: 12px; border-bottom: 2px solid var(--border-color); color: #475569; }
+        td { padding: 12px; border-bottom: 1px solid var(--border-color); text-align: center; }
+        
+        /* تنسيقات إضافية */
+        .summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
+        .stat-card { background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid var(--border-color); }
     </style>
 </head>
-<body data-theme="dark">
+<body>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginDiv" class="login-card">
-        <div class="top-bar-actions" style="justify-content: flex-end; margin-bottom: 3px;">
-            <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 النمط</button>
-        </div>
-        <div class="brand-logo-badge"><i class="fas fa-globe-americas"></i></div>
-        <h2 style="margin: 0 0 2px 0; font-size: 18px; color: var(--text-color);">شركة العالمية</h2>
-        <span class="owner-badge">إدارة: الحاج بلال عبد الرزاق</span>
-        <p style="color: var(--sub-text); font-size: 11px; margin: 8px 0 15px 0;">نظام الإدارة السحابي المالي المباشر ($)</p>
-        
-        <div class="login-options">
-            <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">مدير العالمية</button>
-            <button type="button" class="login-opt-btn" id="btnC" onclick="setRole('collector')">جابي</button>
-        </div>
-        
-        <div class="form-group" id="collectorSelectGroup" style="display:none;">
-            <label>اختر اسم الجابي:</label>
-            <select id="loginCollectorName">
-                <option value="جابي 1">جابي 1</option>
-                <option value="جابي 2">جابي 2</option>
-                <option value="جابي 3">جابي 3</option>
-                <option value="جابي 4">جابي 4</option>
-                <option value="جابي 5">جابي 5</option>
-                <option value="جابي 6">جابي 6</option>
+    <div class="container" id="appRoot">
+        <!-- سيتم التحكم بالمحتوى هنا -->
+        <div id="authScreen" class="card" style="text-align:center;">
+            <h3>شركة العالمية للإدارة</h3>
+            <select id="roleSelect" onchange="checkRole()">
+                <option value="manager">مدير</option>
+                <option value="collector">جابي</option>
             </select>
+            <input type="password" id="passInput" placeholder="كلمة المرور">
+            <button class="btn-action" onclick="login()">دخول</button>
         </div>
 
-        <div class="form-group">
-            <input type="password" id="pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter') login()">
-        </div>
-        <button class="btn btn-gold" onclick="login()">تسجيل الدخول السحابي</button>
-    </div>
-
-    <!-- لوحة التحكم الداخلية -->
-    <div id="appDiv" class="card" style="display:none;">
-        <div class="top-bar-actions">
-            <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 تبديل النمط</button>
-            <button class="btn-logout" onclick="logoutSystem()"><i class="fas fa-sign-out-alt"></i> خروج</button>
-        </div>
-        
-        <div class="app-header">
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, #0284c7, #0369a1); color: white; display: flex; align-items: center; justify-content: center; font-size: 16px; border: 2px solid var(--gold);">
-                    <i class="fas fa-globe-americas"></i>
+        <div id="mainApp" class="card" style="display:none;">
+            <div id="managerSection" style="display:none;">
+                <div class="manager-tabs">
+                    <button class="m-tab-btn active" onclick="showTab('tab1', this)"><i class="fas fa-wallet"></i> الصناديق</button>
+                    <button class="m-tab-btn" onclick="showTab('tab2', this)"><i class="fas fa-cogs"></i> الإعدادات</button>
                 </div>
-                <div>
-                    <h2 style="margin:0; font-size: 16px; color: var(--text-color);">شركة العالمية للشحن والحوالات</h2>
-                    <span class="owner-badge">الإدارة: الحاج بلال عبد الرزاق</span><br>
-                    <span id="roleTitle" style="font-size: 11px; color: var(--sub-text); font-weight: 600;"></span>
+                
+                <div id="tab1" class="tab-content active">
+                    <div class="summary-box" id="collectorsSummary"></div>
                 </div>
-            </div>
-        </div>
-
-        <!-- لوحة الجابي -->
-        <div id="collectorSection" style="display:none; background: var(--card-bg); padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1.5px solid var(--border);">
-            <h3 style="margin-top:0; font-size:14px; color: var(--gold-dark);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة وإرفاق الوصل</h3>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
-                <div class="form-group">
-                    <label>نوع الحركة:</label>
-                    <select id="type">
-                        <option value="حوالة">حوالة مالية</option>
-                        <option value="شحن">إيراد شحن</option>
-                        <option value="مصروف">مصروف (دفعة نقدية)</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label>اسم الزبون / السبب:</label>
-                    <input type="text" id="clientName" placeholder="التفاصيل...">
-                </div>
-                <div class="form-group">
-                    <label>المبلغ الأساسي ($):</label>
-                    <input type="number" step="0.01" id="amount" placeholder="المبلغ...">
-                </div>
-                <div class="form-group">
-                    <label>حسم / خصم ($):</label>
-                    <input type="number" step="0.01" id="discount" value="0" placeholder="الحسم...">
-                </div>
-            </div>
-            <div class="form-group">
-                <label><i class="fas fa-camera"></i> صورة الوصل الورقي الموثق:</label>
-                <input type="file" id="receiptImage" accept="image/*" style="padding: 6px;">
-            </div>
-            <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
-        </div>
-
-        <!-- لوحة المدير (التبويبات الأفقية المنظمة بجانب بعضها) -->
-        <div id="managerSection" style="display:none; background: var(--card-bg); padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1.5px solid var(--border);">
-            <div class="manager-tabs">
-                <button class="m-tab-btn active" onclick="switchManagerTab('tabSummary', this)"><i class="fas fa-wallet"></i> الصناديق</button>
-                <button class="m-tab-btn" onclick="switchManagerTab('tabSettings', this)"><i class="fas fa-cogs"></i> الإعدادات</button>
-                <button class="m-tab-btn" onclick="switchManagerTab('tabAlerts', this)"><i class="fas fa-exclamation-triangle"></i> التحذيرات</button>
-            </div>
-
-            <div id="tabSummary" class="tab-content active">
-                <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
-                <div style="margin-top: 12px;">
-                    <label style="margin-bottom: 4px; font-size: 11px;"><i class="fas fa-filter"></i> فلتر الجدول حسب الجابي:</label>
-                    <select id="filterCollector" onchange="filterTableByManager()" style="padding: 8px;">
-                        <option value="ALL">عرض كل الحركات (الكل)</option>
-                    </select>
+                <div id="tab2" class="tab-content">
+                    <p>إعدادات النظام...</p>
                 </div>
             </div>
 
-            <div id="tabSettings" class="tab-content">
-                <div class="manager-settings-grid">
-                    <div class="setting-box">
-                        <label style="font-size:11px;">إضافة جابي جديد:</label>
-                        <input type="text" id="newCollectorName" placeholder="الاسم..." style="margin-bottom: 6px; padding: 8px;">
-                        <input type="password" id="newCollectorPass" placeholder="الباسورد..." style="margin-bottom: 6px; padding: 8px;">
-                        <button class="btn btn-gold" style="padding: 6px; font-size: 11px;" onclick="addNewCollector()">إضافة</button>
-                    </div>
-                    <div class="setting-box">
-                        <label style="font-size:11px;">باسورد المدير:</label>
-                        <input type="password" id="newAdminPass" placeholder="الجديد..." style="margin-bottom: 6px; padding: 8px;">
-                        <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateAdminPassword()">تحديث</button>
-                    </div>
-                    <div class="setting-box">
-                        <label style="font-size:11px;">رقم واتساب الشركة:</label>
-                        <input type="text" id="companyPhoneInput" placeholder="9639..." style="margin-bottom: 6px; padding: 8px;">
-                        <button class="btn" style="background:#25d366; padding: 6px; font-size: 11px;" onclick="updateCompanyPhone()">حفظ</button>
-                    </div>
-                </div>
-            </div>
-
-            <div id="tabAlerts" class="tab-content">
-                <div style="background:var(--card-bg); padding:12px; border-radius:10px; border:1.5px solid var(--border);">
-                    <h4 style="margin:0 0 6px 0; color:var(--danger); font-size:12px;"><i class="fas fa-exclamation-triangle"></i> الحركات الملغاة:</h4>
-                    <div id="alertLog" style="font-size:11px; color:var(--sub-text);">لا توجد حالات إلغاء.</div>
-                </div>
-            </div>
-        </div>
-
-        <table>
-            <thead>
-                <tr>
-                    <th>رقم الوصل</th>
-                    <th>الجابي</th>
-                    <th>النوع</th>
-                    <th>البيان / الزبون</th>
-                    <th>المبلغ ($)</th>
-                    <th>الحالة والوقت</th>
-                    <th>إجراء</th>
-                </tr>
-            </thead>
-            <tbody id="tableBody"></tbody>
-        </table>
-    </div>
-
-    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; text-align:center;">
-        <div style="background:var(--card-bg); padding:15px; border-radius:16px; max-width:90%; max-height:90%; position:relative; border: 1px solid var(--border);">
-            <span onclick="closeModal()" style="position:absolute; top:8px; left:12px; font-size:22px; cursor:pointer; color:var(--danger);">&times;</span>
-            <h3 style="margin-top:0; font-size:14px;">صورة الوصل الورقي الموثق</h3>
-            <img id="modalImg" src="" style="max-width:100%; max-height:65vh; border-radius:10px;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الوصل</th>
+                        <th>الجابي</th>
+                        <th>المبلغ</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
         </div>
     </div>
 
     <script>
-        const firebaseConfig = {
-            apiKey: "AIzaSyAZDUBWhZaApdidKkJv4LsL1X...",
-            authDomain: "shipping-b300f.firebaseapp.com",
-            projectId: "shipping-b300f",
-            storageBucket: "shipping-b300f.appspot.com",
-            messagingSenderId: "838696145489",
-            appId: "1:838696145489:web:869b0f45605b4129...",
-            measurementId: "G-FTNJ8BBCMD"
-        };
-
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.firestore();
-
-        let role = "";
-        let currentCollectorLoggedIn = "";
-        let globalRecords = [];
-        let collectorsList = [{name: "جابي 1"}, {name: "جابي 2"}, {name: "جابي 3"}, {name: "جابي 4"}, {name: "جابي 5"}, {name: "جابي 6"}];
-        let unsubTrans = null;
-        let unsubCols = null;
-
-        let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
-        let companyPhone = localStorage.getItem("glb_company_phone") || "963912345678";
-
-        function toggleTheme() {
-            let body = document.body;
-            body.setAttribute("data-theme", body.getAttribute("data-theme") === "light" ? "dark" : "light");
+        // إعدادات بسيطة
+        function showTab(id, btn) {
+            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.m-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            btn.classList.add('active');
         }
-
-        function switchManagerTab(tabId, btnElement) {
-            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-            document.querySelectorAll('.m-tab-btn').forEach(el => el.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-            btnElement.classList.add('active');
-        }
-
-        function setRole(r) {
-            role = r;
-            if(r === 'manager') {
-                document.getElementById('btnM').className = 'login-opt-btn active';
-                document.getElementById('btnC').className = 'login-opt-btn';
-                document.getElementById('collectorSelectGroup').style.display = 'none';
-            } else {
-                document.getElementById('btnC').className = 'login-opt-btn active';
-                document.getElementById('btnM').className = 'login-opt-btn';
-                document.getElementById('collectorSelectGroup').style.display = 'block';
-            }
-        }
-
-        function login() {
-            let p = document.getElementById("pass").value;
-            if (role === 'manager') {
-                if (p === adminPass) {
-                    currentCollectorLoggedIn = "الحاج بلال عبد الرزاق (المدير)";
-                    startApp("مدير النظام (الحاج بلال عبد الرزاق)");
-                } else { alert("كلمة مرور المدير غير صحيحة!"); }
-            } else {
-                let selectedName = document.getElementById('loginCollectorName').value;
-                if(!selectedName) { alert("الرجاء اختيار جابي!"); return; }
-                currentCollectorLoggedIn = selectedName;
-                startApp(selectedName);
-            }
-        }
-
-        function logoutSystem() {
-            if(unsubTrans) unsubTrans();
-            if(unsubCols) unsubCols();
-            role = ""; currentCollectorLoggedIn = "";
-            document.getElementById("pass").value = "";
-            document.getElementById("appDiv").style.display = "none";
-            document.getElementById("loginDiv").style.display = "block";
-            setRole('manager');
-        }
-
-        function startApp(titleName) {
-            document.getElementById("loginDiv").style.display = "none";
-            document.getElementById("appDiv").style.display = "block";
-            document.getElementById("roleTitle").innerText = titleName;
-
-            if(role === 'manager') {
-                document.getElementById("managerSection").style.display = "block";
-                document.getElementById("collectorSection").style.display = "none";
-                document.getElementById("companyPhoneInput").value = companyPhone;
-            } else {
-                document.getElementById("managerSection").style.display = "none";
-                document.getElementById("collectorSection").style.display = "block";
-            }
-            listenToCollectors();
-            listenToDatabase();
-        }
-
-        function listenToCollectors() {
-            unsubCols = db.collection("collectors").onSnapshot((snapshot) => {
-                if(!snapshot.empty) {
-                    collectorsList = [];
-                    snapshot.forEach((doc) => { collectorsList.push({ id: doc.id, ...doc.data() }); });
-                }
-                updateCollectorsUI();
-            }, (err) => {
-                updateCollectorsUI();
-            });
-        }
-
-        function updateCollectorsUI() {
-            let selectLogin = document.getElementById("loginCollectorName");
-            let filterSelect = document.getElementById("filterCollector");
-            if(!selectLogin || !filterSelect) return;
-            
-            selectLogin.innerHTML = "";
-            let currentFilterVal = filterSelect.value;
-            filterSelect.innerHTML = `<option value="ALL">عرض كل الحركات (الكل)</option>`;
-
-            collectorsList.forEach(c => {
-                selectLogin.innerHTML += `<option value="${c.name}">${c.name}</option>`;
-                filterSelect.innerHTML += `<option value="${c.name}">حركات ${c.name} فقط</option>`;
-            });
-            filterSelect.value = currentFilterVal;
-            if(role === 'manager') renderUI(globalRecords);
-        }
-
-        function addNewCollector() {
-            let name = document.getElementById("newCollectorName").value.trim();
-            let pass = document.getElementById("newCollectorPass").value.trim();
-            if(!name || !pass) { alert("أدخل الاسم والباسورد!"); return; }
-            db.collection("collectors").doc("col_" + Date.now()).set({name, pass}).then(() => {
-                document.getElementById("newCollectorName").value = "";
-                document.getElementById("newCollectorPass").value = "";
-                alert("تمت إضافة الجابي بنجاح!");
-            });
-        }
-
-        function updateAdminPassword() {
-            let newPass = document.getElementById("newAdminPass").value.trim();
-            if(!newPass) { alert("أدخل كلمة المرور الجديدة!"); return; }
-            adminPass = newPass;
-            localStorage.setItem("glb_admin_pass", newPass);
-            document.getElementById("newAdminPass").value = "";
-            alert("تم التحديث بنجاح!");
-        }
-
-        function updateCompanyPhone() {
-            let newPhone = document.getElementById("companyPhoneInput").value.trim();
-            if(!newPhone) { alert("أدخل رقماً صحيحاً!"); return; }
-            companyPhone = newPhone;
-            localStorage.setItem("glb_company_phone", newPhone);
-            alert("تم الحفظ بنجاح!");
-        }
-
-        function generateReceiptCodeForCollector(collectorName, allRecords) {
-            let prefix = "X";
-            let match = collectorName.match(/\d+/);
-            if (match) {
-                let num = parseInt(match[0]);
-                let charCode = 64 + num;
-                prefix = (charCode >= 65 && charCode <= 90) ? String.fromCharCode(charCode) : "Z" + num;
-            } else {
-                prefix = collectorName.charAt(0).toUpperCase();
-            }
-            let collectorRecords = allRecords.filter(r => r.collector === collectorName && r.code && r.code.startsWith(prefix + "-"));
-            return `${prefix}-${String(collectorRecords.length + 1).padStart(4, '0')}`;
-        }
-
-        function addData() {
-            let name = document.getElementById("clientName").value.trim();
-            let amount = parseFloat(document.getElementById("amount").value) || 0;
-            let discount = parseFloat(document.getElementById("discount").value) || 0;
-            let netAmount = amount - discount;
-            let fileInput = document.getElementById("receiptImage");
-
-            if(!name || amount <= 0) { alert("الرجاء إدخال اسم الزبون ومبلغ صحيح!"); return; }
-            
-            let receiptCode = generateReceiptCodeForCollector(currentCollectorLoggedIn, globalRecords);
-            
-            let processSave = (imgDataUrl) => {
-                db.collection("shippings").add({
-                    code: receiptCode,
-                    collector: currentCollectorLoggedIn,
-                    type: document.getElementById("type").value,
-                    name: name,
-                    amount: netAmount.toFixed(2),
-                    originalAmount: amount.toFixed(2),
-                    discount: discount.toFixed(2),
-                    status: "مقبوض",
-                    receiptImg: imgDataUrl || "",
-                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                    date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
-                }).then(() => {
-                    document.getElementById("clientName").value = "";
-                    document.getElementById("amount").value = "";
-                    document.getElementById("discount").value = "0";
-                    document.getElementById("receiptImage").value = "";
-                    alert("تم الحفظ وإصدار الوصل بنجاح: " + receiptCode);
-                });
-            };
-
-            if (fileInput.files && fileInput.files[0]) {
-                let reader = new FileReader();
-                reader.onload = function(e) { processSave(e.target.result); };
-                reader.readAsDataURL(fileInput.files[0]);
-            } else {
-                processSave("");
-            }
-        }
-
-        async function settleCollector(collectorName, expectedAmount) {
-            let actualInput = prompt(`المبلغ المتوقع بصندوق (${collectorName}): $${expectedAmount.toFixed(2)}\n\nكم المبلغ الفعلي المسلم من الجابي الآن؟`);
-            if(actualInput === null) return;
-            
-            let actualAmount = parseFloat(actualInput);
-            if(isNaN(actualAmount)) { alert("أدخل رقماً صحيحاً!"); return; }
-
-            let diff = actualAmount - expectedAmount;
-            let diffText = diff === 0 ? "مطابق تماماً ($0.00)" : (diff > 0 ? `زيادة (+$${diff.toFixed(2)})` : `عجز (-$${Math.abs(diff).toFixed(2)})`);
-
-            if(!confirm(`تسوية صندوق (${collectorName}):\n- متوقع: $${expectedAmount.toFixed(2)}\n- فعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nهل تريد اعتماد التسوية وأرشفة الحركات وتصفير الصندوق؟`)) return;
-
-            let activeRecords = globalRecords.filter(r => r.collector === collectorName && r.status === "مقبوض");
-            let batch = db.batch();
-            activeRecords.forEach(r => {
-                let ref = db.collection("shippings").doc(r.id);
-                batch.update(ref, { status: "مؤرشف (" + new Date().toLocaleDateString() + ")" });
-            });
-            await batch.commit();
-
-            db.collection("shippings").add({
-                code: "SETTLE-" + Math.floor(100 + Math.random() * 900),
-                collector: collectorName,
-                type: "تسوية",
-                name: `تسوية صندوق | الفعلي: $${actualAmount.toFixed(2)} (${diffText})`,
-                amount: actualAmount.toFixed(2),
-                status: "تسوية وإبراء ذمة",
-                timestamp: firebase.firestore.FieldValue.serverTimestamp(),
-                date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
-            });
-
-            printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
-            alert("تمت التسوية والأرشفة وتصفير الصندوق بنجاح!");
-        }
-
-        function printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, records) {
-            let printWindow = window.open('', '_blank');
-            let html = `
-                <html dir="rtl">
-                <head>
-                    <title>سند تسوية صندوق - ${collectorName}</title>
-                    <style>
-                        body { font-family: Tahoma, sans-serif; padding: 20px; color: #000; }
-                        h2, h3 { text-align: center; margin: 5px 0; }
-                        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-                        th, td { border: 1px solid #000; padding: 8px; text-align: center; font-size: 12px; }
-                        th { background: #eee; }
-                        .summary { margin-top: 15px; font-weight: bold; font-size: 14px; }
-                    </style>
-                </head>
-                <body>
-                    <h2>شركة العالمية للشحن والحوالات</h2>
-                    <h3>سند تسوية صندوق الجابي: ${collectorName}</h3>
-                    <p style="text-align:center; font-size:12px;">تاريخ التسوية: ${new Date().toLocaleDateString()} | المدير: الحاج بلال عبد الرزاق</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>رقم الوصل</th>
-                                <th>النوع</th>
-                                <th>الزبون / البيان</th>
-                                <th>المبلغ ($)</th>
-                            </tr>
-                        </thead>
-                        <tbody>`;
-            
-            records.forEach(r => {
-                html += `<tr>
-                    <td>${r.code || 'GLB'}</td>
-                    <td>${r.type}</td>
-                    <td>${r.name}</td>
-                    <td>$${r.amount}</td>
-                </tr>`;
-            });
-
-            html += `</tbody></table>
-                    <div class="summary">
-                        <p>المبلغ المتوقع بالنظام: $${expectedAmount.toFixed(2)}</p>
-                        <p>المبلغ الفعلي المسلم: $${actualAmount.toFixed(2)}</p>
-                        <p>نتيجة التدقيق: ${diffText}</p>
-                    </div>
-                    <br><br>
-                    <div style="display: flex; justify-content: space-between;">
-                        <span>توقيع المدير: الحاج بلال</span>
-                        <span>توقيع الجابي: .................</span>
-                    </div>
-                    <script>
-                        window.onload = function() { window.print(); window.close(); }
-                    <\/script>
-                </body>
-                </html>`;
-            printWindow.document.write(html);
-            printWindow.document.close();
-        }
-
-        function cancelRecord(docId) {
-            let reason = prompt("سبب الإلغاء (إجباري):");
-            if(reason && reason.trim() !== "") {
-                db.collection("shippings").doc(docId).update({ status: "ملغي: " + reason }).then(() => alert("تم الإلغاء."));
-            }
-        }
-
-        function showReceiptModal(url) {
-            document.getElementById("modalImg").src = url;
-            document.getElementById("imageModal").style.display = "flex";
-        }
-        function closeModal() { document.getElementById("imageModal").style.display = "none"; }
-
-        function listenToDatabase() {
-            unsubTrans = db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
-                globalRecords = [];
-                snapshot.forEach((doc) => { globalRecords.push({ id: doc.id, ...doc.data() }); });
-                renderUI(globalRecords);
-            }, (error) => {
-                renderUI([]);
-            });
-        }
-
-        function filterTableByManager() { renderUI(globalRecords); }
-
-        function renderUI(records) {
-            let tbody = document.getElementById("tableBody");
-            if(!tbody) return;
-            tbody.innerHTML = "";
-            let selectedFilter = document.getElementById("filterCollector") ? document.getElementById("filterCollector").value : "ALL";
-
-            if(role === 'manager') renderManagerSummary(records, selectedFilter);
-
-            let displayed = records;
-            if(role === 'manager' && selectedFilter !== "ALL") {
-                displayed = records.filter(r => r.collector === selectedFilter);
-            }
-
-            if(displayed.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="7" style="color:var(--sub-text); padding:15px;">لا توجد حركات مسجلة</td></tr>`;
-                return;
-            }
-
-            displayed.forEach((r) => {
-                let isCanceled = r.status && r.status.includes('ملغي');
-                let isArchived = r.status && r.status.includes('مؤرشف');
-                
-                tbody.innerHTML += `
-                    <tr class="${isCanceled ? 'alert-row' : (isArchived ? 'archived-row' : '')}">
-                        <td><span class="receipt-code">${r.code || 'GLB'}</span></td>
-                        <td><b>${r.collector}</b></td>
-                        <td><span class="type-pill type-${r.type}">${r.type}</span></td>
-                        <td>${r.name} ${parseFloat(r.discount) > 0 ? `<br><small style="color:var(--gold-dark)">حسم: $${r.discount}</small>` : ''}</td>
-                        <td>$${r.amount}</td>
-                        <td><span style="color:${isCanceled ? 'var(--danger)' : (isArchived ? 'var(--sub-text)' : 'var(--success)}')}; font-weight:bold;">${r.status}</span><br><small>${r.date || ''}</small></td>
-                        <td>
-                            ${r.receiptImg ? `<button onclick="showReceiptModal('${r.receiptImg}')" style="background:var(--primary); color:white; border:none; padding:4px 8px; border-radius:6px; cursor:pointer; font-size:10px;"><i class="fas fa-image"></i></button>` : ''}
-                            ${role==='collector' && !isCanceled && !isArchived && r.collector === currentCollectorLoggedIn ? `
-                                <button onclick="cancelRecord('${r.id}')" class="badge-red">إلغاء</button>
-                            ` : ''}
-                        </td>
-                    </tr>`;
-            });
-        }
-
-        function renderManagerSummary(records, filterCol) {
-            let container = document.getElementById("collectorsSummaryContainer");
-            let alertLogBox = document.getElementById("alertLog");
-            if(!container) return;
-            container.innerHTML = "";
-
-            let summaryData = {};
-            collectorsList.forEach(c => { summaryData[c.name] = 0; });
-            let alertHtml = "";
-
-            records.forEach(r => {
-                let col = r.collector;
-                if(r.status && r.status.includes('ملغي')) {
-                    alertHtml += `<p style="margin:4px 0;">⚠️ ${r.code} (${r.collector}): ${r.status}</p>`;
-                } else if(r.status === "مقبوض") {
-                    let amt = parseFloat(r.amount) || 0;
-                    if(summaryData[col] !== undefined) {
-                        if(r.type === 'مصروف') summaryData[col] -= amt;
-                        else summaryData[col] += amt;
-                    }
-                }
-            });
-
-            for(let colName in summaryData) {
-                if(filterCol !== "ALL" && filterCol !== colName) continue;
-                let balance = summaryData[colName];
-                container.innerHTML += `
-                    <div class="collector-card">
-                        <h4 style="margin:0 0 6px 0; color:var(--gold-dark); font-size:13px;">صندوق: ${colName}</h4>
-                        <p style="margin:0 0 8px 0; font-size:18px; font-weight:bold;">$${balance.toFixed(2)}</p>
-                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-print"></i> تسوية وطباعة السند</button>
-                    </div>`;
-            }
-            if(alertLogBox) alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
-        }
+        
+        function login() { document.getElementById('authScreen').style.display='none'; document.getElementById('mainApp').style.display='block'; document.getElementById('managerSection').style.display='block'; }
     </script>
 </body>
 </html>
