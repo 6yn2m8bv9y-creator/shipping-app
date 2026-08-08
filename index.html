@@ -18,51 +18,61 @@
             --dark: #f8fafc; --light: #090d16; --border: #1e293b; --card-bg: #111827;
             --text-color: #f8fafc; --sub-text: #94a3b8;
         }
-        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--light); margin: 0; padding: 15px; direction: rtl; color: var(--text-color); transition: 0.3s; }
-        .card { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 30px; border-radius: 24px; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border: 1px solid var(--border); }
-        .login-card { max-width: 420px; margin: 30px auto; background: var(--card-bg); padding: 30px; border-radius: 24px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); border-top: 6px solid var(--gold); }
-        .brand-logo-badge { width: 80px; height: 80px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
-        .form-group { margin-bottom: 18px; text-align: right; }
-        label { display: block; font-weight: 600; margin-bottom: 6px; font-size: 13px; color: var(--text-color); }
-        input, select { width: 100%; padding: 12px 16px; border: 1px solid var(--border); border-radius: 12px; box-sizing: border-box; font-size: 14px; background: var(--card-bg); color: var(--text-color); outline: none; }
-        .btn { background: var(--primary); color: white; border: none; padding: 12px 20px; border-radius: 12px; cursor: pointer; font-weight: 600; width: 100%; font-size: 14px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; }
-        .btn-gold { background: linear-gradient(135deg, #d4af37, #b45309); color: white; box-shadow: 0 4px 12px rgba(212,175,55,0.25); }
-        .btn-settle { background: var(--success); color: white; border: none; padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: 12px; font-weight: bold; margin-top: 8px; }
-        .btn-logout { background: #fef2f2; color: var(--danger); width: auto; padding: 8px 16px; border-radius: 10px; border: 1px solid #fee2e2; cursor: pointer; font-weight: 600; font-size: 13px; }
+        body { 
+            font-family: 'Segoe UI', Tahoma, sans-serif; 
+            background: radial-gradient(circle at top, #1e293b 0%, #0f172a 100%); 
+            min-height: 100vh;
+            margin: 0; padding: 20px; direction: rtl; color: var(--text-color); transition: 0.3s; 
+        }
+        .card { max-width: 1100px; margin: auto; background: var(--card-bg); padding: 35px; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); border: 1px solid rgba(212,175,55,0.2); }
+        .login-card { max-width: 440px; margin: 50px auto; background: var(--card-bg); padding: 40px 30px; border-radius: 28px; text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.4); border-top: 6px solid var(--gold); border: 1px solid rgba(212,175,55,0.2); }
+        .brand-logo-badge { width: 90px; height: 90px; margin: 0 auto 15px auto; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-size: 38px; box-shadow: 0 8px 25px rgba(212,175,55,0.4); animation: pulseLogo 3s infinite; }
+        @keyframes pulseLogo { 0% { transform: scale(1); } 50% { transform: scale(1.05); } 100% { transform: scale(1); } }
+        .form-group { margin-bottom: 20px; text-align: right; }
+        label { display: block; font-weight: 600; margin-bottom: 8px; font-size: 13px; color: var(--text-color); }
+        input, select { width: 100%; padding: 14px 18px; border: 1.5px solid var(--border); border-radius: 14px; box-sizing: border-box; font-size: 14px; background: var(--card-bg); color: var(--text-color); outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--gold); box-shadow: 0 0 0 4px rgba(212,175,55,0.15); }
+        .btn { background: var(--primary); color: white; border: none; padding: 14px 20px; border-radius: 14px; cursor: pointer; font-weight: 600; width: 100%; font-size: 15px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; transition: 0.2s; }
+        .btn:hover { opacity: 0.95; transform: translateY(-1px); }
+        .btn-gold { background: linear-gradient(135deg, #d4af37, #b45309); color: white; box-shadow: 0 6px 20px rgba(212,175,55,0.3); }
+        .btn-settle { background: var(--success); color: white; border: none; padding: 8px 14px; border-radius: 10px; cursor: pointer; font-size: 12px; font-weight: bold; margin-top: 10px; transition: 0.2s; }
+        .btn-settle:hover { background: #059669; }
+        .btn-logout { background: rgba(239,68,68,0.1); color: var(--danger); width: auto; padding: 8px 16px; border-radius: 10px; border: 1px solid rgba(239,68,68,0.2); cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
+        .btn-logout:hover { background: var(--danger); color: white; }
         .top-bar-actions { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .theme-toggle-btn { background: var(--card-bg); color: var(--gold); border: 1px solid var(--border); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: bold; font-size: 13px; }
-        .login-options { display: flex; gap: 10px; margin-bottom: 20px; }
-        .login-opt-btn { background: var(--card-bg); color: var(--sub-text); border: 1px solid var(--border); padding: 12px; border-radius: 12px; cursor: pointer; font-weight: 600; flex: 1; }
-        .login-opt-btn.active { background: var(--gold); color: white; border-color: var(--gold); }
-        .collector-summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px; margin-bottom: 25px; }
-        .collector-card { background: var(--light); border: 1px solid var(--border); padding: 18px; border-radius: 16px; text-align: center; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card-bg); border-radius: 12px; overflow: hidden; border: 1px solid var(--border); }
-        th, td { border-bottom: 1px solid var(--border); padding: 14px; text-align: center; font-size: 14px; color: var(--text-color); }
-        th { background: var(--light); color: var(--sub-text); font-weight: 600; }
-        .badge-red { color: var(--danger); background: #fef2f2; padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 12px; border: 1px solid #fee2e2; cursor: pointer; }
+        .theme-toggle-btn { background: var(--card-bg); color: var(--gold); border: 1.5px solid var(--border); padding: 8px 14px; border-radius: 12px; cursor: pointer; font-weight: bold; font-size: 13px; }
+        .login-options { display: flex; gap: 10px; margin-bottom: 22px; }
+        .login-opt-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 12px; border-radius: 14px; cursor: pointer; font-weight: 600; flex: 1; transition: 0.2s; }
+        .login-opt-btn.active { background: linear-gradient(135deg, #d4af37, #b45309); color: white; border-color: transparent; box-shadow: 0 4px 15px rgba(212,175,55,0.3); }
+        .collector-summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 18px; margin-bottom: 25px; }
+        .collector-card { background: var(--card-bg); border: 1.5px solid var(--border); padding: 20px; border-radius: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.03); }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; background: var(--card-bg); border-radius: 16px; overflow: hidden; border: 1px solid var(--border); }
+        th, td { border-bottom: 1px solid var(--border); padding: 16px; text-align: center; font-size: 14px; color: var(--text-color); }
+        th { background: rgba(212,175,55,0.08); color: var(--gold-dark); font-weight: 700; }
+        .badge-red { color: var(--danger); background: rgba(239,68,68,0.1); padding: 6px 12px; border-radius: 10px; font-weight: 600; font-size: 12px; border: 1px solid rgba(239,68,68,0.2); cursor: pointer; }
         .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 25px; border-bottom: 2px solid var(--border); padding-bottom: 20px; }
-        .owner-badge { background: linear-gradient(135deg, #d4af37, #b45309); color: white; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 4px; }
-        .receipt-code { font-family: monospace; background: var(--light); padding: 4px 8px; border-radius: 6px; font-weight: bold; color: var(--primary-dark); border: 1px solid var(--border); font-size: 12px; }
-        .alert-row { background: rgba(239, 68, 68, 0.08) !important; }
-        .high-amount-row { background: rgba(212, 175, 55, 0.1) !important; border-right: 4px solid var(--gold); }
-        .type-pill { padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: bold; }
-        .type-حوالة { background: #dcfce7; color: #166534; }
-        .type-شحن { background: #dbeafe; color: #1e40af; }
-        .type-مصروف { background: #fee2e2; color: #991b1b; }
-        .type-تسوية { background: #fef3c7; color: #b45309; }
+        .owner-badge { background: linear-gradient(135deg, #d4af37, #b45309); color: white; padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-top: 6px; box-shadow: 0 2px 10px rgba(212,175,55,0.3); }
+        .receipt-code { font-family: monospace; background: rgba(2,132,199,0.1); padding: 6px 10px; border-radius: 8px; font-weight: bold; color: var(--primary); border: 1px solid rgba(2,132,199,0.2); font-size: 13px; }
+        .alert-row { background: rgba(239, 68, 68, 0.05) !important; }
+        .high-amount-row { background: rgba(212, 175, 55, 0.08) !important; border-right: 4px solid var(--gold); }
+        .type-pill { padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+        .type-حوالة { background: rgba(16,185,129,0.15); color: #059669; }
+        .type-شحن { background: rgba(2,132,199,0.15); color: var(--primary); }
+        .type-مصروف { background: rgba(239,68,68,0.15); color: var(--danger); }
+        .type-تسوية { background: rgba(212,175,55,0.15); color: var(--gold-dark); }
     </style>
 </head>
-<body data-theme="light">
+<body data-theme="dark">
 
     <!-- شاشة تسجيل الدخول -->
     <div id="loginDiv" class="login-card">
         <div class="top-bar-actions" style="justify-content: flex-end; margin-bottom: 5px;">
             <button class="theme-toggle-btn" onclick="toggleTheme()">🌙 النمط</button>
         </div>
-        <div class="brand-logo-badge"><i class="fas fa-globe"></i></div>
-        <h2 style="margin: 0 0 2px 0; font-size: 19px; color: var(--text-color);">شركة العالمية</h2>
+        <div class="brand-logo-badge"><i class="fas fa-globe-americas"></i></div>
+        <h2 style="margin: 0 0 2px 0; font-size: 22px; color: var(--text-color);">شركة العالمية</h2>
         <span class="owner-badge">إدارة: الحاج بلال عبد الرزاق</span>
-        <p style="color: var(--sub-text); font-size: 11px; margin: 10px 0 15px 0;">نظام الإدارة السحابي المباشر ($)</p>
+        <p style="color: var(--sub-text); font-size: 12px; margin: 12px 0 20px 0;">نظام الإدارة السحابي المالي المباشر ($)</p>
         
         <div class="login-options">
             <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">مدير العالمية</button>
@@ -89,11 +99,11 @@
         
         <div class="app-header">
             <div style="display: flex; align-items: center; gap: 15px;">
-                <div style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-size: 20px;">
-                    <i class="fas fa-globe"></i>
+                <div style="width: 55px; height: 55px; border-radius: 50%; background: linear-gradient(135deg, #d4af37, #b45309); color: white; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 4px 15px rgba(212,175,55,0.3);">
+                    <i class="fas fa-globe-americas"></i>
                 </div>
                 <div>
-                    <h2 style="margin:0; font-size: 17px; color: var(--text-color);">شركة العالمية للشحن والحوالات</h2>
+                    <h2 style="margin:0; font-size: 19px; color: var(--text-color);">شركة العالمية للشحن والحوالات</h2>
                     <span class="owner-badge">الإدارة: الحاج بلال عبد الرزاق</span><br>
                     <span id="roleTitle" style="font-size: 12px; color: var(--sub-text); font-weight: 600;"></span>
                 </div>
@@ -101,8 +111,8 @@
         </div>
 
         <!-- قسم الإدخال (خاص بالجابي) -->
-        <div id="collectorSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--text-color);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة وإرفاق الوصل الورقي</h3>
+        <div id="collectorSection" style="display:none; background: var(--card-bg); padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 1.5px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <h3 style="margin-top:0; font-size:16px; color: var(--gold-dark);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة وإرفاق الوصل الورقي</h3>
             <div class="form-group">
                 <label>نوع الحركة:</label>
                 <select id="type">
@@ -121,43 +131,43 @@
             </div>
             <div class="form-group">
                 <label><i class="fas fa-camera"></i> صورة الوصل الورقي (ختم إلكتروني للتوثيق):</label>
-                <input type="file" id="receiptImage" accept="image/*" style="padding: 8px;">
+                <input type="file" id="receiptImage" accept="image/*" style="padding: 10px;">
             </div>
             <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
         <!-- لوحة المدير المتقدمة -->
-        <div id="managerSection" style="display:none; background: var(--light); padding: 22px; border-radius: 16px; margin-bottom: 25px; border: 1px solid var(--border);">
-            <h3 style="margin-top:0; font-size:15px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> كشوفات ومطابقة صناديق الجباة (العجز والزيادة) ($)</h3>
+        <div id="managerSection" style="display:none; background: var(--card-bg); padding: 25px; border-radius: 20px; margin-bottom: 25px; border: 1.5px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
+            <h3 style="margin-top:0; font-size:16px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> كشوفات ومطابقة صناديق الجباة (العجز والزيادة) ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
             
-            <div style="background: var(--card-bg); padding: 18px; border-radius: 14px; border: 1px solid var(--border); margin-top: 20px;">
-                <h4 style="margin:0 0 12px 0; color: var(--primary-dark); font-size:14px;"><i class="fas fa-users-cog"></i> إعدادات النظام وإدارة الجباة وكلمات المرور:</h4>
+            <div style="background: rgba(212,175,55,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--border); margin-top: 20px;">
+                <h4 style="margin:0 0 15px 0; color: var(--gold-dark); font-size:15px;"><i class="fas fa-users-cog"></i> إعدادات النظام وإدارة الجباة وكلمات المرور:</h4>
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 15px;">
                     
-                    <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                    <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1.5px solid var(--border);">
                         <label style="font-size:12px;">إضافة جابي جديد:</label>
-                        <input type="text" id="newCollectorName" placeholder="اسم الجابي الجديد..." style="margin-bottom: 8px; padding: 8px;">
-                        <input type="password" id="newCollectorPass" placeholder="كلمة مروره..." style="margin-bottom: 8px; padding: 8px;">
-                        <button class="btn btn-gold" style="padding: 8px; font-size: 13px;" onclick="addNewCollector()">إضافة الجابي للسحابة</button>
+                        <input type="text" id="newCollectorName" placeholder="اسم الجابي الجديد..." style="margin-bottom: 10px;">
+                        <input type="password" id="newCollectorPass" placeholder="كلمة مروره..." style="margin-bottom: 10px;">
+                        <button class="btn btn-gold" style="padding: 10px; font-size: 13px;" onclick="addNewCollector()">إضافة الجابي للسحابة</button>
                     </div>
 
-                    <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                    <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1.5px solid var(--border);">
                         <label style="font-size:12px;">تغيير كلمة مرور المدير:</label>
-                        <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة للمدير..." style="margin-bottom: 8px; padding: 8px;">
-                        <button class="btn" style="padding: 8px; font-size: 13px;" onclick="updateAdminPassword()">تحديث باسورد المدير</button>
+                        <input type="password" id="newAdminPass" placeholder="كلمة المرور الجديدة للمدير..." style="margin-bottom: 10px;">
+                        <button class="btn" style="padding: 10px; font-size: 13px;" onclick="updateAdminPassword()">تحديث باسورد المدير</button>
                     </div>
 
-                    <div style="background: var(--light); padding: 12px; border-radius: 10px; border: 1px solid var(--border);">
+                    <div style="background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1.5px solid var(--border);">
                         <label style="font-size:12px;"><i class="fab fa-whatsapp" style="color:#25d366;"></i> رقم واتساب الشركة المعتمد:</label>
-                        <input type="text" id="companyPhoneInput" placeholder="مثال: 963912345678" style="margin-bottom: 8px; padding: 8px;">
-                        <button class="btn" style="background:#25d366; padding: 8px; font-size: 13px;" onclick="updateCompanyPhone()">حفظ رقم الواتساب</button>
+                        <input type="text" id="companyPhoneInput" placeholder="مثال: 963912345678" style="margin-bottom: 10px;">
+                        <button class="btn" style="background:#25d366; padding: 10px; font-size: 13px;" onclick="updateCompanyPhone()">حفظ رقم الواتساب</button>
                     </div>
 
                 </div>
             </div>
 
-            <div style="display: flex; gap: 15px; align-items: center; margin-top: 15px; background: var(--card-bg); padding: 15px; border-radius: 12px; border: 1px solid var(--border);">
+            <div style="display: flex; gap: 15px; align-items: center; margin-top: 20px; background: var(--card-bg); padding: 15px; border-radius: 16px; border: 1.5px solid var(--border);">
                 <div style="flex: 1; margin-bottom: 0;">
                     <label style="margin-bottom: 5px;"><i class="fas fa-filter"></i> فلتر عرض الجدول حسب الجابي:</label>
                     <select id="filterCollector" onchange="filterTableByManager()">
@@ -166,7 +176,7 @@
                 </div>
             </div>
 
-            <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1px solid var(--border); margin-top:15px;">
+            <div style="background:var(--card-bg); padding:18px; border-radius:16px; border:1.5px solid var(--border); margin-top:20px;">
                 <h4 style="margin:0 0 10px 0; color:var(--danger); font-size:14px;"><i class="fas fa-exclamation-triangle"></i> سجل التحذيرات والإلغاءات:</h4>
                 <div id="alertLog" style="font-size:13px; color:var(--sub-text);">لا توجد حالات إلغاء مسجلة.</div>
             </div>
@@ -189,11 +199,11 @@
     </div>
 
     <!-- نافذة منبثقة لعرض صورة الوصل المرفقة -->
-    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; text-align:center;">
-        <div style="background:var(--card-bg); padding:20px; border-radius:16px; max-width:90%; max-height:90%; position:relative;">
-            <span onclick="closeModal()" style="position:absolute; top:10px; left:15px; font-size:24px; cursor:pointer; color:var(--danger);">&times;</span>
+    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; text-align:center;">
+        <div style="background:var(--card-bg); padding:20px; border-radius:20px; max-width:90%; max-height:90%; position:relative; border: 1px solid var(--border);">
+            <span onclick="closeModal()" style="position:absolute; top:10px; left:15px; font-size:26px; cursor:pointer; color:var(--danger);">&times;</span>
             <h3 style="margin-top:0; color:var(--text-color);">صورة الوصل الورقي الموثق</h3>
-            <img id="modalImg" src="" style="max-width:100%; max-height:70vh; border-radius:10px; border:1px solid var(--border);">
+            <img id="modalImg" src="" style="max-width:100%; max-height:70vh; border-radius:12px; border:1px solid var(--border);">
         </div>
     </div>
 
@@ -540,7 +550,7 @@
                         <td>$${r.amount}</td>
                         <td><span style="color: ${isCanceled ? 'var(--danger)' : 'var(--success)'}; font-weight: bold;">${displayStatus}</span><br><small style="color:var(--sub-text);">${r.date || ''}</small></td>
                         <td>
-                            ${r.receiptImg ? `<button onclick="showReceiptModal('${r.receiptImg}')" style="background:var(--primary); color:white; border:none; padding:5px 8px; border-radius:6px; cursor:pointer; font-size:11px; margin-bottom:4px;"><i class="fas fa-image"></i> الوصل</button><br>` : ''}
+                            ${r.receiptImg ? `<button onclick="showReceiptModal('${r.receiptImg}')" style="background:var(--primary); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; margin-bottom:4px;"><i class="fas fa-image"></i> الوصل</button><br>` : ''}
                             ${role==='collector' && !isCanceled && r.collector === currentCollectorLoggedIn && r.status !== 'تسوية وإبراء ذمة' ? `
                                 <button onclick="cancelRecord('${r.id}', '${r.code}', '${r.collector}')" class="badge-red">إلغاء</button>
                                 <button onclick="duplicateRecord('${r.type}', '${r.name}', '${r.amount}')" style="background:var(--primary); color:white; border:none; padding:6px 10px; border-radius:8px; cursor:pointer; font-size:11px; margin-top:4px;">تكرار</button>
@@ -580,8 +590,8 @@
                 
                 container.innerHTML += `
                     <div class="collector-card">
-                        <h4 style="margin:0 0 8px 0; color:var(--gold-dark); font-size:14px;">صندوق: ${colName}</h4>
-                        <p style="margin:0; font-size:20px; font-weight:bold;">$${currentBalance.toFixed(2)}</p>
+                        <h4 style="margin:0 0 10px 0; color:var(--gold-dark); font-size:15px;">صندوق: ${colName}</h4>
+                        <p style="margin:0 0 12px 0; font-size:22px; font-weight:bold; color:var(--text-color);">$${currentBalance.toFixed(2)}</p>
                         <button class="btn-settle" onclick="settleCollector('${colName}', ${currentBalance})"><i class="fab fa-whatsapp"></i> تسوية ومطابقة الصندوق</button>
                     </div>`;
             }
