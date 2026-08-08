@@ -40,7 +40,9 @@
         th { background: #f8fafc; color: #475569; font-weight: 700; }
         .receipt-code { font-family: monospace; background: #e0f2fe; padding: 3px 6px; border-radius: 6px; font-weight: bold; color: var(--accent-blue); }
         .badge-red { color: var(--danger); background: #fee2e2; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 10px; border: none; cursor: pointer; }
-        .btn-settle { background: var(--success); color: white; border: none; padding: 6px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        
+        /* زر التسوية بدون كلمة طباعة */
+        .btn-settle { background: var(--success); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
     </style>
 </head>
 <body>
@@ -170,6 +172,15 @@
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- نافذة عرض سند التسوية بداخل التطبيق (بدون مشاكل PDF) -->
+    <div id="settleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; text-align:center;">
+        <div style="background:#fff; padding:20px; border-radius:15px; max-width:90%; width: 450px; text-align:right;">
+            <h3 style="text-align:center; color:var(--accent-gold); margin-top:0;">سند تسوية الصندوق</h3>
+            <div id="settleDetailsContent" style="font-size: 12px; margin-bottom: 15px; max-height: 50vh; overflow-y: auto;"></div>
+            <button class="btn" onclick="closeSettleModal()">إغلاق ومتابعة</button>
         </div>
     </div>
 
@@ -373,7 +384,7 @@
             if(isNaN(actualAmount)) { alert("أدخل رقماً صحيحاً!"); return; }
 
             let diff = actualAmount - expectedAmount;
-            let diffText = diff === 0 ? "مطابق تماماً" : (diff > 0 ? `زيادة +$${diff.toFixed(2)}` : `عجز -$${Math.abs(diff).toFixed(2)}`);
+            let diffText = diff === 0 ? "مطابق تماماً ($0.00)" : (diff > 0 ? `زيادة (+$${diff.toFixed(2)})` : `عجز (-$${Math.abs(diff).toFixed(2)})`);
 
             if(!confirm(`تسوية صندوق (${collectorName}):\n- متوقع: $${expectedAmount.toFixed(2)}\n- فعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nتأكيد الاعتماد والأرشفة؟`)) return;
 
@@ -385,23 +396,32 @@
             });
             await batch.commit();
 
-            printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
-            alert("تمت التسوية بنجاح!");
+            showSettleReportModal(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
         }
 
-        function printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, records) {
-            let printWindow = window.open('', '_blank');
-            let html = `<html dir="rtl"><head><title>سند تسوية</title><style>body{font-family:Tahoma;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border:1px solid #000;padding:6px;text-align:center;font-size:12px;}th{background:#eee;}</style></head><body>
-                <h3 style="text-align:center;">شركة العالمية - سند تسوية صندوق: ${collectorName}</h3>
-                <table><thead><tr><th>الوصل</th><th>النوع</th><th>الزبون</th><th>المبلغ الصافي ($)</th><th>الحسم ($)</th></tr></thead><tbody>`;
-            records.forEach(r => { 
+        function showSettleReportModal(collectorName, expectedAmount, actualAmount, diffText, records) {
+            let content = `<b>الجابي:</b> ${collectorName}<br><b>التاريخ:</b> ${new Date().toLocaleDateString()}<hr>`;
+            content += `<table style="width:100%; border-collapse:collapse; margin-bottom:10px;">
+                <tr style="background:#eee;"><th>الوصل</th><th>النوع</th><th>الصافي</th><th>الحسم</th></tr>`;
+            
+            records.forEach(r => {
                 let disc = r.discount ? `$${r.discount}` : '$0.00';
-                html += `<tr><td>${r.code}</td><td>${r.type}</td><td>${r.name}</td><td>$${r.amount}</td><td>${disc}</td></tr>`; 
+                content += `<tr><td>${r.code}</td><td>${r.type}</td><td>$${r.amount}</td><td>${disc}</td></tr>`;
             });
-            html += `</tbody></table><br><b>المتوقع:</b> $${expectedAmount} | <b>الفعلي:</b> $${actualAmount} | <b>الحالة:</b> ${diffText}
-                <script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
-            printWindow.document.write(html);
-            printWindow.document.close();
+            content += `</table>`;
+            content += `<div style="text-align:right; font-weight:bold; font-size:13px; line-height:1.6;">
+                المبلغ المتوقع: $${expectedAmount.toFixed(2)}<br>
+                المبلغ الفعلي: $${actualAmount.toFixed(2)}<br>
+                نتيجة المطابقة: <span style="color:var(--accent-gold);">${diffText}</span>
+            </div>`;
+
+            document.getElementById("settleDetailsContent").innerHTML = content;
+            document.getElementById("settleModal").style.display = "flex";
+        }
+
+        function closeSettleModal() {
+            document.getElementById("settleModal").style.display = "none";
+            alert("تمت التسوية وأرشفة الصندوق بنجاح!");
         }
 
         function cancelRecord(docId) {
@@ -494,7 +514,7 @@
                     <div class="collector-card">
                         <h4 style="margin:0 0 4px 0; color:var(--accent-gold); font-size:12px;">صندوق: ${colName}</h4>
                         <p style="margin:0 0 6px 0; font-size:16px; font-weight:bold;">$${balance.toFixed(2)}</p>
-                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-print"></i> تسوية وطباعة</button>
+                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-check-circle"></i> اعتماد التسوية وإبراء الذمة</button>
                     </div>`;
             }
             if(alertLogBox) alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
