@@ -44,7 +44,7 @@
         .login-opt-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 10px; border-radius: 12px; cursor: pointer; font-weight: 600; flex: 1; }
         .login-opt-btn.active { background: linear-gradient(135deg, #d4af37, #b45309); color: white; border-color: transparent; }
         
-        /* ترويسة التبويبات الحديثة لتقصير شاشة المدير وتنيسقها */
+        /* ترويسة التبويبات الحديثة لتقصير شاشة المدير */
         .manager-tabs { display: flex; gap: 8px; margin-bottom: 20px; border-bottom: 2px solid var(--border); padding-bottom: 12px; flex-wrap: wrap; }
         .m-tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 10px 18px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 13px; transition: 0.2s; }
         .m-tab-btn.active { background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: bold; box-shadow: 0 4px 12px rgba(212,175,55,0.3); }
@@ -145,17 +145,15 @@
             <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
-        <!-- لوحة المدير المتقدمة (مقسّمة بتبويبات حديثة لمنع الطول المبالغ فيه) -->
+        <!-- لوحة المدير المتقدمة (مقسّمة بتبويبات حديثة) -->
         <div id="managerSection" style="display:none; background: var(--card-bg); padding: 20px; border-radius: 20px; margin-bottom: 20px; border: 1.5px solid var(--border);">
             
-            <!-- أزرار التبويبات -->
             <div class="manager-tabs">
                 <button class="m-tab-btn active" onclick="switchManagerTab('tabSummary', this)"><i class="fas fa-wallet"></i> صناديق الجباة</button>
                 <button class="m-tab-btn" onclick="switchManagerTab('tabSettings', this)"><i class="fas fa-cogs"></i> إعدادات النظام</button>
                 <button class="m-tab-btn" onclick="switchManagerTab('tabAlerts', this)"><i class="fas fa-exclamation-triangle"></i> التحذيرات والإلغاءات</button>
             </div>
 
-            <!-- تبويب 1: الصناديق والمطابقة -->
             <div id="tabSummary" class="tab-content active">
                 <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
                 <div style="margin-top: 15px;">
@@ -166,7 +164,6 @@
                 </div>
             </div>
 
-            <!-- تبويب 2: الإعدادات -->
             <div id="tabSettings" class="tab-content">
                 <div class="manager-settings-grid">
                     <div class="setting-box">
@@ -188,7 +185,6 @@
                 </div>
             </div>
 
-            <!-- تبويب 3: التحذيرات -->
             <div id="tabAlerts" class="tab-content">
                 <div style="background:var(--card-bg); padding:15px; border-radius:12px; border:1.5px solid var(--border);">
                     <h4 style="margin:0 0 8px 0; color:var(--danger); font-size:13px;"><i class="fas fa-exclamation-triangle"></i> سجل الحركات الملغاة:</h4>
@@ -337,8 +333,13 @@
                     collectorsList.push({ id: doc.id, ...doc.data() });
                 });
                 if(collectorsList.length === 0) {
-                    db.collection("collectors").doc("collector1").set({name: "جابي 1", pass: "collector123"});
-                    db.collection("collectors").doc("collector2").set({name: "جابي 2", pass: "collector123"});
+                    // تهيئة 6 جباة افتراضيين للتجربة
+                    db.collection("collectors").doc("col_1").set({name: "جابي 1", pass: "collector123"});
+                    db.collection("collectors").doc("col_2").set({name: "جابي 2", pass: "collector123"});
+                    db.collection("collectors").doc("col_3").set({name: "جابي 3", pass: "collector123"});
+                    db.collection("collectors").doc("col_4").set({name: "جابي 4", pass: "collector123"});
+                    db.collection("collectors").doc("col_5").set({name: "جابي 5", pass: "collector123"});
+                    db.collection("collectors").doc("col_6").set({name: "جابي 6", pass: "collector123"});
                     return;
                 }
                 updateCollectorsUI();
@@ -396,13 +397,38 @@
             alert("تم تحديث وحفظ رقم واتساب الشركة المعتمد بنجاح!");
         }
 
+        // دالة توليد رقم الوصل بناءً على حرف الجابي (A, B, C, D, E, F...)
+        function generateReceiptCodeForCollector(collectorName, allRecords) {
+            let prefix = "X";
+            let match = collectorName.match(/\d+/);
+            if (match) {
+                let num = parseInt(match[0]);
+                // تحويل الرقم إلى حرف مقابلة (1=A, 2=B, 3=C, 4=D, 5=E, 6=F)
+                let charCode = 64 + num;
+                if (charCode >= 65 && charCode <= 90) {
+                    prefix = String.fromCharCode(charCode);
+                } else {
+                    prefix = "Z" + num;
+                }
+            } else {
+                prefix = collectorName.charAt(0).toUpperCase();
+            }
+
+            // تصفية الوصلات الخاصة بهذا الجابي حصراً لمعرفة التسلسل الحالي
+            let collectorRecords = allRecords.filter(r => r.collector === collectorName && r.code && r.code.startsWith(prefix + "-"));
+            let nextNum = collectorRecords.length + 1;
+            
+            return `${prefix}-${String(nextNum).padStart(4, '0')}`;
+        }
+
         function addData() {
             let name = document.getElementById("clientName").value.trim();
             let amount = document.getElementById("amount").value.trim();
             let fileInput = document.getElementById("receiptImage");
             if(!name || !amount) { alert("الرجاء ملء كافة الحقول!"); return; }
             
-            let receiptCode = "GLB-" + Math.floor(1000 + Math.random() * 9000);
+            // توليد رقم الوصل حسب الجابي الحالي والسجل الموجود
+            let receiptCode = generateReceiptCodeForCollector(currentCollectorLoggedIn, globalRecords);
             
             let processSave = (imgDataUrl) => {
                 db.collection("shippings").add({
@@ -465,12 +491,10 @@
             }
         }
 
-        // دالة إنشاء ملف PDF مع دعم النصوص العربية المقلوبة والمنسقة بشكل سليم ومشاركتها
         async function generateAndShareSettlementPDF(collectorName, expectedAmount, actualAmount, diffText) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             
-            // استخدام خط عام متوافق وتصميم سند رسمي
             doc.setFont("helvetica", "bold");
             doc.setFontSize(16);
             doc.text("AL ALEMIYE - Al Shahan & Hawalat", 105, 20, { align: "center" });
