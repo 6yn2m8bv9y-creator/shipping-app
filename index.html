@@ -63,7 +63,6 @@
         .type-مصروف { background: rgba(239,68,68,0.15); color: var(--danger); }
         .type-تسوية { background: rgba(212,175,55,0.15); color: var(--gold-dark); }
         
-        /* تنسيق قسم الإعدادات المتقدمة للمدير لتوفير المساحة */
         .manager-settings-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 12px; margin-top: 10px; }
         .setting-box { background: var(--card-bg); padding: 12px; border-radius: 12px; border: 1.5px solid var(--border); }
     </style>
@@ -142,7 +141,7 @@
             <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
-        <!-- لوحة المدير المتقدمة (مرتبة ومدمجة لتوفير المساحة) -->
+        <!-- لوحة المدير المتقدمة -->
         <div id="managerSection" style="display:none; background: var(--card-bg); padding: 20px; border-radius: 20px; margin-bottom: 25px; border: 1.5px solid var(--border); box-shadow: 0 4px 20px rgba(0,0,0,0.05);">
             <h3 style="margin-top:0; font-size:16px; color: var(--gold-dark);"><i class="fas fa-chart-pie"></i> صناديق الجباة وإصدار سندات التسوية ($)</h3>
             <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
@@ -427,7 +426,7 @@
             else if(diff > 0) diffText = `زيادة بقيمة (+$${diff.toFixed(2)})`;
             else diffText = `عجز بقيمة (-$${Math.abs(diff).toFixed(2)})`;
 
-            let confirmSettle = confirm(`نتيجة مطابقة الصندوق للجابي (${collectorName}):\n- المبلغ المفترض: $${expectedAmount.toFixed(2)}\n- المبلغ الفعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nهل تريد اعتماد التسوية وإنشاء سند PDF رسمي للطباعة وإرساله لواتساب الشركة؟`);
+            let confirmSettle = confirm(`نتيجة مطابقة الصندوق للجابي (${collectorName}):\n- المبلغ المفترض: $${expectedAmount.toFixed(2)}\n- المبلغ الفعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nهل تريد اعتماد التسوية وإنشاء ملف الـ PDF ومشاركته؟`);
             
             if(confirmSettle) {
                 db.collection("shippings").add({
@@ -440,13 +439,13 @@
                     timestamp: firebase.firestore.FieldValue.serverTimestamp(),
                     date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
                 }).then(() => {
-                    generateSettlementPDF(collectorName, expectedAmount, actualAmount, diffText);
+                    generateAndShareSettlementPDF(collectorName, expectedAmount, actualAmount, diffText);
                 });
             }
         }
 
-        // دالة إنشاء وتنزيل سند التسوية الاحترافي بصيغة PDF وجاهز للطباعة والواتساب
-        function generateSettlementPDF(collectorName, expectedAmount, actualAmount, diffText) {
+        // دالة إنشاء ملف PDF ومشاركته عبر ميزة المشاركة بالجهاز (Share) دون إجبار على الواتساب
+        async function generateAndShareSettlementPDF(collectorName, expectedAmount, actualAmount, diffText) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF('p', 'mm', 'a4');
             
@@ -465,7 +464,6 @@
             
             doc.line(15, 68, 195, 68);
             
-            // جلب حركات الجابي غير المغلقة لعرضها بالسند
             let colRecords = globalRecords.filter(r => r.collector === collectorName && r.status !== 'تسوية وإبراء ذمة' && !r.status.includes('ملغي'));
             
             let yPos = 78;
@@ -502,21 +500,32 @@
             doc.text("توقيع المدير: الحاج بلال عبد الرزاق", 20, yPos);
             doc.text("توقيع الجابي: ..........................", 130, yPos);
 
-            // تحميل وتنزيل الـ PDF تلقائياً للطباعة
             const pdfBlob = doc.output('blob');
             const fileName = `Settlement_${collectorName}_${Date.now()}.pdf`;
-            
+            const file = new File([pdfBlob], fileName, { type: 'application/pdf' });
+
+            // استخدام ميزة المشاركة الداعمة في المتصفحات الحديثة (الجوال والكمبيوتر)
+            if (navigator.canShare && navigator.canShare({ files: [file] })) {
+                try {
+                    await navigator.share({
+                        title: 'سند تسوية - شركة العالمية',
+                        text: `سند تسوية صندوق للجابي: ${collectorName} - الحالة: ${diffText}`,
+                        files: [file]
+                    });
+                    return;
+                } catch (error) {
+                    if (error.name !== 'AbortError') {
+                        console.log('Share error:', error);
+                    }
+                }
+            }
+
+            // خيار احتياطي (تنزيل الملف مباشرة إذا لم تدعم المشاركة)
             const link = document.createElement('a');
             link.href = URL.createObjectURL(pdfBlob);
             link.download = fileName;
             link.click();
-
-            // تحضير نص الواتساب لإرساله كمعلومة مكملة
-            let msg = `📋 *شركة العالمية للشحن والحوالات*\n📄 *سند تسوية صندوق (${collectorName})*\n💵 المتوقع: $${expectedAmount.toFixed(2)}\n💰 الفعلي: $${actualAmount.toFixed(2)}\n⚖️ الحالة: ${diffText}\n✍️ المدير: الحاج بلال عبد الرزاق`;
-            let whatsappUrl = `https://wa.me/${companyPhone}?text=${encodeURIComponent(msg)}`;
-            window.open(whatsappUrl, '_blank');
-
-            alert("تم إنشاء ملف الـ PDF وتنزيله بنجاح لطباعته، وتم فتح واتساب الشركة لإرسال التفاصيل!");
+            alert("تم إنشاء ملف الـ PDF وتنزيله بنجاح لجهازك!");
         }
 
         function duplicateRecord(type, name, amount) {
@@ -640,7 +649,7 @@
                     <div class="collector-card">
                         <h4 style="margin:0 0 10px 0; color:var(--gold-dark); font-size:15px;">صندوق: ${colName}</h4>
                         <p style="margin:0 0 10px 0; font-size:20px; font-weight:bold; color:var(--text-color);">$${currentBalance.toFixed(2)}</p>
-                        <button class="btn-settle" onclick="settleCollector('${colName}', ${currentBalance})"><i class="fas fa-file-pdf"></i> تسوية وإصدار PDF</button>
+                        <button class="btn-settle" onclick="settleCollector('${colName}', ${currentBalance})"><i class="fas fa-share-alt"></i> تسوية ومشاركة PDF</button>
                     </div>`;
             }
             alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء مسجلة اليوم.";
