@@ -1,8 +1,173 @@
-            <!-- جدول الحركات المحدث (يظهر المبلغ والحسم) -->
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شركة العالمية - نظام الإدارة السحابي</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root { 
+            --bg-color: #f1f5f9; --card-bg: #ffffff; --text-main: #1e293b; 
+            --accent-blue: #0ea5e9; --accent-gold: #ca8a04; --success: #10b981; 
+            --danger: #ef4444; --border-color: #e2e8f0; --sub-text: #64748b;
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; direction: rtl; }
+        .container { max-width: 950px; margin: auto; }
+        .login-card { max-width: 400px; margin: 40px auto; background: var(--card-bg); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.05); border: 1px solid var(--border-color); }
+        .brand-logo-badge { width: 75px; height: 75px; margin: 0 auto 12px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        .owner-badge { background: #fef3c7; color: #b45309; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; text-align: right; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px; color: var(--text-main); }
+        input, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 13px; background: #fff; color: var(--text-main); outline: none; }
+        .btn { background: var(--accent-blue); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; font-size: 13px; }
+        .btn-gold { background: var(--accent-gold); }
+        .btn-logout { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .login-options { display: flex; gap: 8px; margin-bottom: 15px; }
+        .login-opt-btn { background: #f8fafc; color: var(--sub-text); border: 1px solid var(--border-color); padding: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; flex: 1; font-size: 12px; }
+        .login-opt-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 15px; }
+        .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .manager-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .m-tab-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 10px; background: #f8fafc; color: var(--sub-text); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; }
+        .m-tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .collector-summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+        .collector-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 10px; text-align: center; font-size: 12px; }
+        th { background: #f8fafc; color: #475569; font-weight: 700; }
+        .receipt-code { font-family: monospace; background: #e0f2fe; padding: 3px 6px; border-radius: 6px; font-weight: bold; color: var(--accent-blue); }
+        .badge-red { color: var(--danger); background: #fee2e2; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 10px; border: none; cursor: pointer; }
+        .btn-settle { background: var(--success); color: white; border: none; padding: 6px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <!-- شاشة تسجيل الدخول -->
+        <div id="loginDiv" class="login-card">
+            <div class="brand-logo-badge"><i class="fas fa-globe-americas"></i></div>
+            <h2 style="margin: 0 0 5px 0; font-size: 18px;">شركة العالمية</h2>
+            <span class="owner-badge">إدارة: الحاج بلال عبد الرزاق</span>
+            
+            <div class="login-options">
+                <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">مدير</button>
+                <button type="button" class="login-opt-btn" id="btnC" onclick="setRole('collector')">جابي</button>
+            </div>
+            
+            <div class="form-group" id="collectorSelectGroup" style="display:none;">
+                <label>اختر اسم الجابي:</label>
+                <select id="loginCollectorName">
+                    <option value="جابي 1">جابي 1</option>
+                    <option value="جابي 2">جابي 2</option>
+                    <option value="جابي 3">جابي 3</option>
+                    <option value="جابي 4">جابي 4</option>
+                    <option value="جابي 5">جابي 5</option>
+                    <option value="جابي 6">جابي 6</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter') login()">
+            </div>
+            <button class="btn" onclick="login()">دخول للنظام</button>
+        </div>
+
+        <!-- لوحة التحكم الداخلية -->
+        <div id="appDiv" class="card" style="display:none;">
+            <div class="app-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 35px; height: 35px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0; font-size: 15px;">شركة العالمية للشحن والحوالات</h3>
+                        <span id="roleTitle" style="font-size: 11px; color: var(--sub-text); font-weight: 600;"></span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logoutSystem()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+            </div>
+
+            <!-- لوحة الجابي -->
+            <div id="collectorSection" style="display:none; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top:0; font-size:13px; color: var(--accent-gold);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                    <div class="form-group">
+                        <label>نوع الحركة:</label>
+                        <select id="type">
+                            <option value="حوالة">حوالة مالية</option>
+                            <option value="شحن">إيراد شحن</option>
+                            <option value="مصروف">مصروف (دفعة)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم الزبون / السبب:</label>
+                        <input type="text" id="clientName" placeholder="التفاصيل...">
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ الأساسي ($):</label>
+                        <input type="number" step="0.01" id="amount" placeholder="المبلغ...">
+                    </div>
+                    <div class="form-group">
+                        <label>حسم / خصم ($):</label>
+                        <input type="number" step="0.01" id="discount" value="0" placeholder="الحسم...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>صورة الوصل (اختياري):</label>
+                    <input type="file" id="receiptImage" accept="image/*" style="padding: 4px;">
+                </div>
+                <button class="btn" onclick="addData()">حفظ وإرسال للسحابة</button>
+            </div>
+
+            <!-- لوحة المدير -->
+            <div id="managerSection" style="display:none; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                <div class="manager-tabs">
+                    <button class="m-tab-btn active" onclick="switchManagerTab('tabSummary', this)"><i class="fas fa-wallet"></i> الصناديق</button>
+                    <button class="m-tab-btn" onclick="switchManagerTab('tabSettings', this)"><i class="fas fa-cogs"></i> الإعدادات</button>
+                    <button class="m-tab-btn" onclick="switchManagerTab('tabAlerts', this)"><i class="fas fa-exclamation-triangle"></i> التحذيرات</button>
+                </div>
+
+                <div id="tabSummary" class="tab-content active">
+                    <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 11px;"><i class="fas fa-filter"></i> فلتر حسب الجابي:</label>
+                        <select id="filterCollector" onchange="filterTableByManager()" style="padding: 6px;">
+                            <option value="ALL">عرض كل الحركات</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="tabSettings" class="tab-content">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                        <div>
+                            <label style="font-size:11px;">إضافة جابي:</label>
+                            <input type="text" id="newCollectorName" placeholder="الاسم..." style="margin-bottom: 4px; padding: 6px;">
+                            <input type="password" id="newCollectorPass" placeholder="الباسورد..." style="margin-bottom: 4px; padding: 6px;">
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="addNewCollector()">إضافة</button>
+                        </div>
+                        <div>
+                            <label style="font-size:11px;">باسورد المدير:</label>
+                            <input type="password" id="newAdminPass" placeholder="الجديد..." style="margin-bottom: 4px; padding: 6px;">
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateAdminPassword()">تحديث</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tabAlerts" class="tab-content">
+                    <h4 style="margin:0 0 4px 0; color:var(--danger); font-size:12px;">الحركات الملغاة:</h4>
+                    <div id="alertLog" style="font-size:11px; color:var(--sub-text);">لا توجد حالات إلغاء.</div>
+                </div>
+            </div>
+
+            <!-- جدول الحركات -->
             <table>
                 <thead>
                     <tr>
-                        <th>الوصل</th>
+                        <th>رقم الوصل</th>
                         <th>الجابي</th>
                         <th>المبلغ ($)</th>
                         <th>الإجراء</th>
@@ -10,9 +175,260 @@
                 </thead>
                 <tbody id="tableBody"></tbody>
             </table>
+        </div>
+    </div>
+
+    <!-- نافذة عرض الصورة -->
+    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; text-align:center;">
+        <div style="background:#fff; padding:15px; border-radius:12px; max-width:90%;">
+            <span onclick="closeModal()" style="float:left; font-size:20px; cursor:pointer; color:var(--danger);">&times;</span>
+            <h4 style="margin-top:0;">صورة الوصل</h4>
+            <img id="modalImg" src="" style="max-width:100%; max-height:60vh; border-radius:8px;">
+        </div>
+    </div>
 
     <script>
-        // ... (باقي الكود كما هو) ...
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZDUBWhZaApdidKkJv4LsL1X...",
+            authDomain: "shipping-b300f.firebaseapp.com",
+            projectId: "shipping-b300f",
+            storageBucket: "shipping-b300f.appspot.com",
+            messagingSenderId: "838696145489",
+            appId: "1:838696145489:web:869b0f45605b4129...",
+            measurementId: "G-FTNJ8BBCMD"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        let role = "";
+        let currentCollectorLoggedIn = "";
+        let globalRecords = [];
+        let collectorsList = [{name: "جابي 1"}, {name: "جابي 2"}, {name: "جابي 3"}, {name: "جابي 4"}, {name: "جابي 5"}, {name: "جابي 6"}];
+        let unsubTrans = null;
+        let unsubCols = null;
+
+        let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
+
+        function switchManagerTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.m-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function setRole(r) {
+            role = r;
+            if(r === 'manager') {
+                document.getElementById('btnM').className = 'login-opt-btn active';
+                document.getElementById('btnC').className = 'login-opt-btn';
+                document.getElementById('collectorSelectGroup').style.display = 'none';
+            } else {
+                document.getElementById('btnC').className = 'login-opt-btn active';
+                document.getElementById('btnM').className = 'login-opt-btn';
+                document.getElementById('collectorSelectGroup').style.display = 'block';
+            }
+        }
+
+        function login() {
+            let p = document.getElementById("pass").value;
+            if (role === 'manager') {
+                if (p === adminPass) {
+                    currentCollectorLoggedIn = "الحاج بلال عبد الرزاق (المدير)";
+                    startApp("مدير النظام (الحاج بلال)");
+                } else { alert("كلمة مرور المدير غير صحيحة!"); }
+            } else {
+                let selectedName = document.getElementById('loginCollectorName').value;
+                currentCollectorLoggedIn = selectedName;
+                startApp(selectedName);
+            }
+        }
+
+        function logoutSystem() {
+            if(unsubTrans) unsubTrans();
+            if(unsubCols) unsubCols();
+            role = ""; currentCollectorLoggedIn = "";
+            document.getElementById("pass").value = "";
+            document.getElementById("appDiv").style.display = "none";
+            document.getElementById("loginDiv").style.display = "block";
+            setRole('manager');
+        }
+
+        function startApp(titleName) {
+            document.getElementById("loginDiv").style.display = "none";
+            document.getElementById("appDiv").style.display = "block";
+            document.getElementById("roleTitle").innerText = titleName;
+
+            if(role === 'manager') {
+                document.getElementById("managerSection").style.display = "block";
+                document.getElementById("collectorSection").style.display = "none";
+            } else {
+                document.getElementById("managerSection").style.display = "none";
+                document.getElementById("collectorSection").style.display = "block";
+            }
+            listenToCollectors();
+            listenToDatabase();
+        }
+
+        function listenToCollectors() {
+            unsubCols = db.collection("collectors").onSnapshot((snapshot) => {
+                if(!snapshot.empty) {
+                    collectorsList = [];
+                    snapshot.forEach((doc) => { collectorsList.push({ id: doc.id, ...doc.data() }); });
+                }
+                updateCollectorsUI();
+            }, (err) => { updateCollectorsUI(); });
+        }
+
+        function updateCollectorsUI() {
+            let selectLogin = document.getElementById("loginCollectorName");
+            let filterSelect = document.getElementById("filterCollector");
+            if(!selectLogin || !filterSelect) return;
+            
+            selectLogin.innerHTML = "";
+            let currentFilterVal = filterSelect.value;
+            filterSelect.innerHTML = `<option value="ALL">عرض كل الحركات</option>`;
+
+            collectorsList.forEach(c => {
+                selectLogin.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                filterSelect.innerHTML += `<option value="${c.name}">حركات ${c.name}</option>`;
+            });
+            filterSelect.value = currentFilterVal;
+            if(role === 'manager') renderUI(globalRecords);
+        }
+
+        function addNewCollector() {
+            let name = document.getElementById("newCollectorName").value.trim();
+            let pass = document.getElementById("newCollectorPass").value.trim();
+            if(!name || !pass) { alert("أدخل الاسم والباسورد!"); return; }
+            db.collection("collectors").doc("col_" + Date.now()).set({name, pass}).then(() => {
+                document.getElementById("newCollectorName").value = "";
+                document.getElementById("newCollectorPass").value = "";
+                alert("تمت إضافة الجابي بنجاح!");
+            });
+        }
+
+        function updateAdminPassword() {
+            let newPass = document.getElementById("newAdminPass").value.trim();
+            if(!newPass) { alert("أدخل كلمة المرور الجديدة!"); return; }
+            adminPass = newPass;
+            localStorage.setItem("glb_admin_pass", newPass);
+            document.getElementById("newAdminPass").value = "";
+            alert("تم التحديث بنجاح!");
+        }
+
+        function generateReceiptCodeForCollector(collectorName, allRecords) {
+            let prefix = "X";
+            let match = collectorName.match(/\d+/);
+            if (match) {
+                let num = parseInt(match[0]);
+                prefix = String.fromCharCode(64 + num);
+            } else {
+                prefix = collectorName.charAt(0).toUpperCase();
+            }
+            let collectorRecords = allRecords.filter(r => r.collector === collectorName && r.code && r.code.startsWith(prefix + "-"));
+            return `${prefix}-${String(collectorRecords.length + 1).padStart(4, '0')}`;
+        }
+
+        function addData() {
+            let name = document.getElementById("clientName").value.trim();
+            let amount = parseFloat(document.getElementById("amount").value) || 0;
+            let discount = parseFloat(document.getElementById("discount").value) || 0;
+            let netAmount = amount - discount;
+            let fileInput = document.getElementById("receiptImage");
+
+            if(!name || amount <= 0) { alert("الرجاء إدخال اسم الزبون ومبلغ صحيح!"); return; }
+            
+            let receiptCode = generateReceiptCodeForCollector(currentCollectorLoggedIn, globalRecords);
+            
+            let processSave = (imgDataUrl) => {
+                db.collection("shippings").add({
+                    code: receiptCode,
+                    collector: currentCollectorLoggedIn,
+                    type: document.getElementById("type").value,
+                    name: name,
+                    amount: netAmount.toFixed(2),
+                    discount: discount.toFixed(2), // تم حفظ الحسم هنا بوضوح لكي يظهر عند المدير والـ PDF
+                    status: "مقبوض",
+                    receiptImg: imgDataUrl || "",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
+                }).then(() => {
+                    document.getElementById("clientName").value = "";
+                    document.getElementById("amount").value = "";
+                    document.getElementById("discount").value = "0";
+                    document.getElementById("receiptImage").value = "";
+                    alert("تم الحفظ بنجاح: " + receiptCode);
+                });
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) { processSave(e.target.result); };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processSave("");
+            }
+        }
+
+        async function settleCollector(collectorName, expectedAmount) {
+            let actualInput = prompt(`المبلغ المتوقع بصندوق (${collectorName}): $${expectedAmount.toFixed(2)}\n\nكم المبلغ الفعلي المسلم؟`);
+            if(actualInput === null) return;
+            let actualAmount = parseFloat(actualInput);
+            if(isNaN(actualAmount)) { alert("أدخل رقماً صحيحاً!"); return; }
+
+            let diff = actualAmount - expectedAmount;
+            let diffText = diff === 0 ? "مطابق تماماً" : (diff > 0 ? `زيادة +$${diff.toFixed(2)}` : `عجز -$${Math.abs(diff).toFixed(2)}`);
+
+            if(!confirm(`تسوية صندوق (${collectorName}):\n- متوقع: $${expectedAmount.toFixed(2)}\n- فعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nتأكيد الاعتماد والأرشفة؟`)) return;
+
+            let activeRecords = globalRecords.filter(r => r.collector === collectorName && r.status === "مقبوض");
+            let batch = db.batch();
+            activeRecords.forEach(r => {
+                let ref = db.collection("shippings").doc(r.id);
+                batch.update(ref, { status: "مؤرشف" });
+            });
+            await batch.commit();
+
+            printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
+            alert("تمت التسوية بنجاح!");
+        }
+
+        function printSettlementReport(collectorName, expectedAmount, actualAmount, diffText, records) {
+            let printWindow = window.open('', '_blank');
+            let html = `<html dir="rtl"><head><title>سند تسوية</title><style>body{font-family:Tahoma;padding:20px;}table{width:100%;border-collapse:collapse;margin-top:10px;}th,td{border:1px solid #000;padding:6px;text-align:center;font-size:12px;}th{background:#eee;}</style></head><body>
+                <h3 style="text-align:center;">شركة العالمية - سند تسوية صندوق: ${collectorName}</h3>
+                <table><thead><tr><th>الوصل</th><th>النوع</th><th>الزبون</th><th>المبلغ الصافي ($)</th><th>الحسم ($)</th></tr></thead><tbody>`;
+            records.forEach(r => { 
+                let disc = r.discount ? `$${r.discount}` : '$0.00';
+                html += `<tr><td>${r.code}</td><td>${r.type}</td><td>${r.name}</td><td>$${r.amount}</td><td>${disc}</td></tr>`; 
+            });
+            html += `</tbody></table><br><b>المتوقع:</b> $${expectedAmount} | <b>الفعلي:</b> $${actualAmount} | <b>الحالة:</b> ${diffText}
+                <script>window.onload=function(){window.print();window.close();}<\/script></body></html>`;
+            printWindow.document.write(html);
+            printWindow.document.close();
+        }
+
+        function cancelRecord(docId) {
+            let reason = prompt("سبب الإلغاء:");
+            if(reason) db.collection("shippings").doc(docId).update({ status: "ملغي: " + reason });
+        }
+
+        function showReceiptModal(url) {
+            document.getElementById("modalImg").src = url;
+            document.getElementById("imageModal").style.display = "flex";
+        }
+        function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+
+        function listenToDatabase() {
+            unsubTrans = db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                globalRecords = [];
+                snapshot.forEach((doc) => { globalRecords.push({ id: doc.id, ...doc.data() }); });
+                renderUI(globalRecords);
+            }, (error) => { renderUI([]); });
+        }
+
+        function filterTableByManager() { renderUI(globalRecords); }
 
         function renderUI(records) {
             let tbody = document.getElementById("tableBody");
@@ -36,7 +452,7 @@
                 let isCanceled = r.status && r.status.includes('ملغي');
                 let isArchived = r.status && r.status.includes('مؤرشف');
                 
-                // تعديل: إظهار الحسم في حال كان أكبر من 0
+                // إظهار الحسم تحت المبلغ في جدول المدير والجابي
                 let discountDisplay = parseFloat(r.discount) > 0 ? `<br><small style="color:var(--accent-gold);">حسم: $${r.discount}</small>` : '';
                 
                 tbody.innerHTML += `
@@ -53,6 +469,42 @@
                     </tr>`;
             });
         }
-        
-        // ... (باقي الكود) ...
+
+        function renderManagerSummary(records, filterCol) {
+            let container = document.getElementById("collectorsSummaryContainer");
+            let alertLogBox = document.getElementById("alertLog");
+            if(!container) return;
+            container.innerHTML = "";
+
+            let summaryData = {};
+            collectorsList.forEach(c => { summaryData[c.name] = 0; });
+            let alertHtml = "";
+
+            records.forEach(r => {
+                let col = r.collector;
+                if(r.status && r.status.includes('ملغي')) {
+                    alertHtml += `<p style="margin:2px 0;">⚠️ ${r.code} (${col}): ${r.status}</p>`;
+                } else if(r.status === "مقبوض") {
+                    let amt = parseFloat(r.amount) || 0;
+                    if(summaryData[col] !== undefined) {
+                        if(r.type === 'مصروف') summaryData[col] -= amt;
+                        else summaryData[col] += amt;
+                    }
+                }
+            });
+
+            for(let colName in summaryData) {
+                if(filterCol !== "ALL" && filterCol !== colName) continue;
+                let balance = summaryData[colName];
+                container.innerHTML += `
+                    <div class="collector-card">
+                        <h4 style="margin:0 0 4px 0; color:var(--accent-gold); font-size:12px;">صندوق: ${colName}</h4>
+                        <p style="margin:0 0 6px 0; font-size:16px; font-weight:bold;">$${balance.toFixed(2)}</p>
+                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-print"></i> تسوية وطباعة</button>
+                    </div>`;
+            }
+            if(alertLogBox) alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
+        }
     </script>
+</body>
+</html>
