@@ -42,7 +42,6 @@
         .login-opt-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; flex: 1; font-size: 12px; }
         .login-opt-btn.active { background: linear-gradient(135deg, #d4af37, #b45309); color: white; border-color: transparent; }
         
-        /* ترويسة التبويبات الحديثة لعدم طول الشاشة */
         .manager-tabs { display: flex; gap: 6px; margin-bottom: 15px; border-bottom: 2px solid var(--border); padding-bottom: 10px; flex-wrap: wrap; }
         .m-tab-btn { background: var(--card-bg); color: var(--sub-text); border: 1.5px solid var(--border); padding: 8px 14px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 12px; }
         .m-tab-btn.active { background: var(--gold); color: var(--dark); border-color: var(--gold); font-weight: bold; }
@@ -87,7 +86,14 @@
         
         <div class="form-group" id="collectorSelectGroup" style="display:none;">
             <label>اختر اسم الجابي:</label>
-            <select id="loginCollectorName"></select>
+            <select id="loginCollectorName">
+                <option value="جابي 1">جابي 1</option>
+                <option value="جابي 2">جابي 2</option>
+                <option value="جابي 3">جابي 3</option>
+                <option value="جابي 4">جابي 4</option>
+                <option value="جابي 5">جابي 5</option>
+                <option value="جابي 6">جابي 6</option>
+            </select>
         </div>
 
         <div class="form-group">
@@ -116,7 +122,7 @@
             </div>
         </div>
 
-        <!-- لوحة الجابي (مدمجة ومنظمة) -->
+        <!-- لوحة الجابي -->
         <div id="collectorSection" style="display:none; background: var(--card-bg); padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1.5px solid var(--border);">
             <h3 style="margin-top:0; font-size:14px; color: var(--gold-dark);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة وإرفاق الوصل</h3>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
@@ -148,16 +154,14 @@
             <button class="btn btn-gold" onclick="addData()">حفظ وإرسال للسحابة فوراً</button>
         </div>
 
-        <!-- لوحة المدير المتقدمة (مقسمة بتبويبات قصيرة ومرتبة) -->
+        <!-- لوحة المدير -->
         <div id="managerSection" style="display:none; background: var(--card-bg); padding: 18px; border-radius: 16px; margin-bottom: 15px; border: 1.5px solid var(--border);">
-            
             <div class="manager-tabs">
                 <button class="m-tab-btn active" onclick="switchManagerTab('tabSummary', this)"><i class="fas fa-wallet"></i> صناديق الجباة والتسوية</button>
                 <button class="m-tab-btn" onclick="switchManagerTab('tabSettings', this)"><i class="fas fa-cogs"></i> إعدادات النظام</button>
                 <button class="m-tab-btn" onclick="switchManagerTab('tabAlerts', this)"><i class="fas fa-exclamation-triangle"></i> التحذيرات والإلغاءات</button>
             </div>
 
-            <!-- تبويب الصناديق -->
             <div id="tabSummary" class="tab-content active">
                 <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
                 <div style="margin-top: 12px;">
@@ -168,7 +172,6 @@
                 </div>
             </div>
 
-            <!-- تبويب الإعدادات -->
             <div id="tabSettings" class="tab-content">
                 <div class="manager-settings-grid">
                     <div class="setting-box">
@@ -190,7 +193,6 @@
                 </div>
             </div>
 
-            <!-- تبويب التحذيرات -->
             <div id="tabAlerts" class="tab-content">
                 <div style="background:var(--card-bg); padding:12px; border-radius:10px; border:1.5px solid var(--border);">
                     <h4 style="margin:0 0 6px 0; color:var(--danger); font-size:12px;"><i class="fas fa-exclamation-triangle"></i> الحركات الملغاة:</h4>
@@ -215,7 +217,6 @@
         </table>
     </div>
 
-    <!-- نافذة عرض صورة الوصل -->
     <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.85); z-index:9999; align-items:center; justify-content:center; text-align:center;">
         <div style="background:var(--card-bg); padding:15px; border-radius:16px; max-width:90%; max-height:90%; position:relative; border: 1px solid var(--border);">
             <span onclick="closeModal()" style="position:absolute; top:8px; left:12px; font-size:22px; cursor:pointer; color:var(--danger);">&times;</span>
@@ -241,7 +242,7 @@
         let role = "";
         let currentCollectorLoggedIn = "";
         let globalRecords = [];
-        let collectorsList = [];
+        let collectorsList = [{name: "جابي 1"}, {name: "جابي 2"}, {name: "جابي 3"}, {name: "جابي 4"}, {name: "جابي 5"}, {name: "جابي 6"}];
         let unsubTrans = null;
         let unsubCols = null;
 
@@ -283,15 +284,8 @@
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
                 if(!selectedName) { alert("الرجاء اختيار جابي!"); return; }
-
-                db.collection("collectors").where("name", "==", selectedName).get().then((snapshot) => {
-                    if(snapshot.empty) { alert("الجابي غير موجود!"); return; }
-                    let colData = snapshot.docs[0].data();
-                    if (p === (colData.pass || "collector123")) {
-                        currentCollectorLoggedIn = selectedName;
-                        startApp(selectedName);
-                    } else { alert("كلمة المرور غير صحيحة!"); }
-                });
+                currentCollectorLoggedIn = selectedName;
+                startApp(selectedName);
             }
         }
 
@@ -324,14 +318,13 @@
 
         function listenToCollectors() {
             unsubCols = db.collection("collectors").onSnapshot((snapshot) => {
-                collectorsList = [];
-                snapshot.forEach((doc) => { collectorsList.push({ id: doc.id, ...doc.data() }); });
-                if(collectorsList.length === 0) {
-                    for(let i=1; i<=6; i++) {
-                        db.collection("collectors").doc("col_" + i).set({name: `جابي ${i}`, pass: "collector123"});
-                    }
-                    return;
+                if(!snapshot.empty) {
+                    collectorsList = [];
+                    snapshot.forEach((doc) => { collectorsList.push({ id: doc.id, ...doc.data() }); });
                 }
+                updateCollectorsUI();
+            }, (err) => {
+                console.log("استخدام القائمة الافتراضية للجباة");
                 updateCollectorsUI();
             });
         }
@@ -339,6 +332,8 @@
         function updateCollectorsUI() {
             let selectLogin = document.getElementById("loginCollectorName");
             let filterSelect = document.getElementById("filterCollector");
+            if(!selectLogin || !filterSelect) return;
+            
             selectLogin.innerHTML = "";
             let currentFilterVal = filterSelect.value;
             filterSelect.innerHTML = `<option value="ALL">عرض كل الحركات (الكل)</option>`;
@@ -447,7 +442,6 @@
 
             if(!confirm(`تسوية صندوق (${collectorName}):\n- متوقع: $${expectedAmount.toFixed(2)}\n- فعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nهل تريد اعتماد التسوية وأرشفة الحركات وتصفير الصندوق؟`)) return;
 
-            // أرشفة حركات الجابي النشطة
             let activeRecords = globalRecords.filter(r => r.collector === collectorName && r.status === "مقبوض");
             let batch = db.batch();
             activeRecords.forEach(r => {
@@ -456,7 +450,6 @@
             });
             await batch.commit();
 
-            // حفظ سند التسوية بالسحابة
             db.collection("shippings").add({
                 code: "SETTLE-" + Math.floor(100 + Math.random() * 900),
                 collector: collectorName,
@@ -554,6 +547,9 @@
                 globalRecords = [];
                 snapshot.forEach((doc) => { globalRecords.push({ id: doc.id, ...doc.data() }); });
                 renderUI(globalRecords);
+            }, (error) => {
+                console.log("خطأ في جلب قاعدة البيانات، يتم العرض الفارغ");
+                renderUI([]);
             });
         }
 
@@ -561,6 +557,7 @@
 
         function renderUI(records) {
             let tbody = document.getElementById("tableBody");
+            if(!tbody) return;
             tbody.innerHTML = "";
             let selectedFilter = document.getElementById("filterCollector") ? document.getElementById("filterCollector").value : "ALL";
 
@@ -601,6 +598,7 @@
         function renderManagerSummary(records, filterCol) {
             let container = document.getElementById("collectorsSummaryContainer");
             let alertLogBox = document.getElementById("alertLog");
+            if(!container) return;
             container.innerHTML = "";
 
             let summaryData = {};
@@ -630,7 +628,7 @@
                         <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-file-pdf"></i> تسوية وأرشفة</button>
                     </div>`;
             }
-            alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
+            if(alertLogBox) alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
         }
     </script>
 </body>
