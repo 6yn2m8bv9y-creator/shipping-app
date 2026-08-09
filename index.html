@@ -42,6 +42,14 @@
         .badge-red { color: var(--danger); background: #fee2e2; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 10px; border: none; cursor: pointer; }
         .btn-settle { background: var(--success); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
         #offlineBanner { display: none; background: #fee2e2; color: var(--danger); padding: 8px; text-align: center; font-size: 11px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; }
+        
+        /* تنسيق خاص لطباعة التقرير PDF */
+        @media print {
+            body * { visibility: hidden; }
+            #settleModal, #settleModal * { visibility: visible; }
+            #settleModal { position: absolute; left: 0; top: 0; width: 100%; height: 100%; background: white !important; }
+            .no-print { display: none !important; }
+        }
     </style>
 </head>
 <body>
@@ -74,7 +82,7 @@
 
         <!-- لوحة التحكم الداخلية -->
         <div id="appDiv" class="card" style="display:none;">
-            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت.</div>
+            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت.[span_0](start_span)[span_0](end_span)</div>
             
             <div class="app-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -176,12 +184,17 @@
         </div>
     </div>
 
-    <!-- نافذة عرض سند التسوية ومشاركة الواتساب -->
+    <!-- نافذة عرض سند التسوية وتصدير PDF -->
     <div id="settleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; text-align:center;">
         <div style="background:#fff; padding:20px; border-radius:15px; max-width:90%; width: 450px; text-align:right;">
             <h3 style="text-align:center; color:var(--accent-blue); margin-top:0;">سند تسوية الصندوق</h3>
             <div id="settleDetailsContent" style="font-size: 12px; margin-bottom: 15px; max-height: 50vh; overflow-y: auto;"></div>
-            <button class="btn" onclick="closeSettleModal()">إغلاق ومتابعة</button>
+            
+            <div class="no-print" style="display: flex; gap: 8px;">
+                <button class="btn" style="background: var(--accent-gold);" onclick="window.print()"><i class="fas fa-file-pdf"></i> حفظ كـ PDF / طباعة</button>
+                <button class="btn" style="background: var(--success);" onclick="confirmFinalSettle()"><i class="fas fa-check"></i> اعتماد وتصفير الصندوق</button>
+            </div>
+            <button class="btn no-print" style="background: var(--danger); margin-top: 8px;" onclick="closeSettleModalWithoutReset()">إلغاء</button>
         </div>
     </div>
 
@@ -218,6 +231,8 @@
         let collectorsList = [{name: "جابي 1"}, {name: "جابي 2"}];
         let unsubTrans = null;
         let unsubCols = null;
+        let pendingSettleCollector = "";
+        let pendingRecordsToArchive = [];
 
         let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
 
@@ -387,7 +402,7 @@
             }
         }
 
-        async function settleCollector(collectorName, expectedAmount) {
+        function settleCollector(collectorName, expectedAmount) {
             let actualInput = prompt(`المبلغ المتوقع بصندوق (${collectorName}): $${expectedAmount.toFixed(2)}\n\nكم المبلغ الفعلي المسلم؟`);
             if(actualInput === null) return;
             let actualAmount = parseFloat(actualInput);
@@ -396,52 +411,42 @@
             let diff = actualAmount - expectedAmount;
             let diffText = diff === 0 ? "مطابق تماماً ($0.00)" : (diff > 0 ? `زيادة (+$${diff.toFixed(2)})` : `عجز (-$${Math.abs(diff).toFixed(2)})`);
 
-            if(!confirm(`تسوية صندوق (${collectorName}):\n- متوقع: $${expectedAmount.toFixed(2)}\n- فعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nتأكيد الاعتماد والأرشفة؟`)) return;
+            pendingSettleCollector = collectorName;
+            pendingRecordsToArchive = globalRecords.filter(r => r.collector === collectorName && r.status === "مقبوض");
 
-            let activeRecords = globalRecords.filter(r => r.collector === collectorName && r.status === "مقبوض");
+            let content = `<b>شركة العالمية - سند تسوية: ${collectorName}</b><br>التاريخ: ${new Date().toLocaleDateString()}<br>-------------------<br>`;
+            
+            pendingRecordsToArchive.forEach(r => { 
+                let disc = parseFloat(r.discount) > 0 ? ` | حسم: $${r.discount}` : '';
+                content += `[${r.code}] ${r.name} (${r.type}) : $${r.amount}${disc}<br>`; 
+            });
+            
+            content += `-------------------<br><b>المتوقع:</b> $${expectedAmount.toFixed(2)}<br><b>الفعلي:</b> $${actualAmount.toFixed(2)}<br><b>النتيجة:</b> ${diffText}`;
+
+            document.getElementById("settleDetailsContent").innerHTML = content;
+            document.getElementById("settleModal").style.display = "flex";
+        }
+
+        async function confirmFinalSettle() {
+            if(!confirm("هل أنت متأكد من اعتماد التصفية وتصفير صندوق الجابي؟")) return;
+
             let batch = db.batch();
-            activeRecords.forEach(r => {
+            pendingRecordsToArchive.forEach(r => {
                 let ref = db.collection("shippings").doc(r.id);
                 batch.update(ref, { status: "مؤرشف" });
             });
             await batch.commit();
 
-            showSettleReportModal(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
-        }
-
-        function showSettleReportModal(collectorName, expectedAmount, actualAmount, diffText, records) {
-            let content = `شركة العالمية - سند تسوية: ${collectorName}\nالتاريخ: ${new Date().toLocaleDateString()}\n-------------------\n`;
-            
-            records.forEach(r => { 
-                let disc = parseFloat(r.discount) > 0 ? ` | حسم: $${r.discount}` : '';
-                content += `[${r.code}] ${r.name} (${r.type}) : $${r.amount}${disc}\n`; 
-            });
-            
-            content += `-------------------\nالمتوقع: $${expectedAmount.toFixed(2)}\nالفعلي: $${actualAmount.toFixed(2)}\nالنتيجة: ${diffText}`;
-
-            let htmlView = content.replace(/\n/g, '<br>');
-            htmlView += `<br><br><button id="shareBtn" style="background:var(--success); color:white; border:none; padding:10px; border-radius:8px; width:100%; cursor:pointer; font-weight:bold;">
-                <i class="fas fa-share-alt"></i> مشاركة السند عبر الواتساب
-                </button>`;
-
-            document.getElementById("settleDetailsContent").innerHTML = htmlView;
-            document.getElementById("settleModal").style.display = "flex";
-
-            document.getElementById("shareBtn").onclick = () => {
-                if (navigator.share) {
-                    navigator.share({
-                        title: 'سند تسوية - شركة العالمية',
-                        text: content
-                    }).catch(err => console.log("تم إلغاء المشاركة"));
-                } else {
-                    alert("جهازك لا يدعم المشاركة المباشرة.");
-                }
-            };
-        }
-
-        function closeSettleModal() {
             document.getElementById("settleModal").style.display = "none";
-            alert("تمت التسوية وأرشفة الصندوق بنجاح!");
+            alert("تمت التسوية وتصفير صندوق وأرشفة حركات (" + pendingSettleCollector + ") بنجاح!");
+            pendingSettleCollector = "";
+            pendingRecordsToArchive = [];
+        }
+
+        function closeSettleModalWithoutReset() {
+            document.getElementById("settleModal").style.display = "none";
+            pendingSettleCollector = "";
+            pendingRecordsToArchive = [];
         }
 
         function cancelRecord(docId) {
