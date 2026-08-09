@@ -1,9 +1,61 @@
-    // دالة لتصفير الصندوق وحركة الجابي
-    function finalizeAndReset() {
-        if (confirm("هل أنت متأكد من طباعة التقرير وتصفير حركة الجابي وتسكير الصندوق؟")) {
-            // هون بنضيف الكود اللي بيحذف حركات الجابي من قاعدة البيانات أو ملف الحسابات
-            localStorage.clear(); // هاد بيمسح البيانات المؤقتة
-            alert("تم أرشفة التقرير وتصفير الصندوق بنجاح!");
-            location.reload(); // بيعمل تحديث للصفحة وبترجع الصناديق صفر
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>تصفية الصندوق ومطابقة الجابي</title>
+    <style>
+        body { font-family: 'Arial', sans-serif; padding: 20px; background: #f4f4f4; }
+        .report-box { background: #fff; padding: 30px; border-radius: 10px; max-width: 900px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        .header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
+        th { background: #1e3a8a; color: white; }
+        .summary { margin-top: 20px; font-weight: bold; background: #e2e8f0; padding: 15px; border-radius: 5px; }
+        .btn-print { background: #1d4ed8; color: white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 5px; font-size: 16px; margin-top: 20px; }
+        
+        /* تنسيق خاص للطباعة (لما تحول لـ PDF) */
+        @media print {
+            .btn-print { display: none; }
+            body { background: #fff; }
+            .report-box { box-shadow: none; }
         }
-    }
+    </style>
+</head>
+<body>
+
+<div class="report-box">
+    <div class="header">
+        <h2>تقرير تصفية الصندوق ومطابقة الجابي</h2>
+        <p>التاريخ: <span id="date"></span></p>
+    </div>
+
+    <!-- جدول الحركات -->
+    <table>
+        <thead>
+            <tr>
+                <th>رقم الحركة</th>
+                <th>اسم الجابي</th>
+                <th>قيمة الحوالة ($)</th>
+                <th>الحالة</th>
+            </tr>
+        </thead>
+        <tbody id="movementsBody">
+            <!-- هون بتنزل حركات الجابي تلقائياً -->
+        </tbody>
+    </table>
+
+    <div class="summary">
+        <p>إجمالي مقبوضات الجابي: <span id="totalAmount">0</span> $</p>
+        <p>رصيد الصندوق الفعلي: <span id="boxBalance">0</span> $</p>
+        <p>حالة المطابقة: <span id="status">مطابق</span></p>
+    </div>
+
+    <button class="btn-print" onclick="window.print()">تصدير إلى PDF / طباعة التقرير</button>
+</div>
+
+<script>
+    document.getElementById('date').innerText = new Date().toLocaleDateString('ar-EG');
+    // هون بيجي كود جلب البيانات من نظام الحسابات تبعك
+</script>
+</body>
+</html>
