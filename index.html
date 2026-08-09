@@ -2,60 +2,543 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>تصفية الصندوق ومطابقة الجابي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>شركة العالمية - نظام الإدارة السحابي</title>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
-        body { font-family: 'Arial', sans-serif; padding: 20px; background: #f4f4f4; }
-        .report-box { background: #fff; padding: 30px; border-radius: 10px; max-width: 900px; margin: auto; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
-        .header { text-align: center; border-bottom: 2px solid #1e3a8a; padding-bottom: 15px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-        th, td { border: 1px solid #ccc; padding: 10px; text-align: center; }
-        th { background: #1e3a8a; color: white; }
-        .summary { margin-top: 20px; font-weight: bold; background: #e2e8f0; padding: 15px; border-radius: 5px; }
-        .btn-print { background: #1d4ed8; color: white; border: none; padding: 12px 25px; cursor: pointer; border-radius: 5px; font-size: 16px; margin-top: 20px; }
-        
-        /* تنسيق خاص للطباعة (لما تحول لـ PDF) */
-        @media print {
-            .btn-print { display: none; }
-            body { background: #fff; }
-            .report-box { box-shadow: none; }
+        :root { 
+            --bg-color: #f0f4f8; --card-bg: #ffffff; --text-main: #1e293b; 
+            --accent-blue: #1d4ed8; --accent-gold: #ca8a04; --success: #10b981; 
+            --danger: #ef4444; --border-color: #cbd5e1; --sub-text: #64748b;
         }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background-color: var(--bg-color); color: var(--text-main); margin: 0; padding: 15px; direction: rtl; }
+        .container { max-width: 950px; margin: auto; }
+        .login-card { max-width: 400px; margin: 40px auto; background: var(--card-bg); padding: 30px; border-radius: 20px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid var(--border-color); }
+        .brand-logo-badge { width: 75px; height: 75px; margin: 0 auto 12px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 32px; }
+        .owner-badge { background: #dbeafe; color: #1e40af; padding: 4px 12px; border-radius: 20px; font-size: 11px; font-weight: bold; display: inline-block; margin-bottom: 15px; }
+        .form-group { margin-bottom: 12px; text-align: right; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; font-size: 12px; color: var(--text-main); }
+        input, select { width: 100%; padding: 10px 14px; border: 1px solid var(--border-color); border-radius: 10px; box-sizing: border-box; font-size: 13px; background: #fff; color: var(--text-main); outline: none; }
+        .btn { background: var(--accent-blue); color: white; border: none; padding: 10px; border-radius: 10px; cursor: pointer; font-weight: 600; width: 100%; font-size: 13px; }
+        .btn-logout { background: rgba(239,68,68,0.1); color: var(--danger); border: 1px solid rgba(239,68,68,0.2); padding: 5px 12px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; }
+        .login-options { display: flex; gap: 8px; margin-bottom: 15px; }
+        .login-opt-btn { background: #f8fafc; color: var(--sub-text); border: 1px solid var(--border-color); padding: 8px; border-radius: 10px; cursor: pointer; font-weight: 600; flex: 1; font-size: 12px; }
+        .login-opt-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .card { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); border: 1px solid var(--border-color); margin-bottom: 15px; }
+        .app-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; }
+        .manager-tabs { display: flex; gap: 8px; margin-bottom: 15px; }
+        .m-tab-btn { flex: 1; padding: 10px; border: 1px solid var(--border-color); border-radius: 10px; background: #f8fafc; color: var(--sub-text); font-weight: bold; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 6px; font-size: 12px; }
+        .m-tab-btn.active { background: var(--accent-blue); color: white; border-color: var(--accent-blue); }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        .collector-summary-box { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; }
+        .collector-card { background: #f8fafc; border: 1px solid var(--border-color); padding: 12px; border-radius: 12px; text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #fff; border-radius: 10px; overflow: hidden; border: 1px solid var(--border-color); }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 10px; text-align: center; font-size: 12px; }
+        th { background: #e0e7ff; color: #1e3a8a; font-weight: 700; }
+        .receipt-code { font-family: monospace; background: #dbeafe; padding: 3px 6px; border-radius: 6px; font-weight: bold; color: var(--accent-blue); }
+        .badge-red { color: var(--danger); background: #fee2e2; padding: 4px 8px; border-radius: 6px; font-weight: bold; font-size: 10px; border: none; cursor: pointer; }
+        .btn-settle { background: var(--success); color: white; border: none; padding: 8px; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: bold; margin-top: 6px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 4px; }
+        #offlineBanner { display: none; background: #fee2e2; color: var(--danger); padding: 8px; text-align: center; font-size: 11px; font-weight: bold; border-radius: 8px; margin-bottom: 10px; }
     </style>
 </head>
 <body>
 
-<div class="report-box">
-    <div class="header">
-        <h2>تقرير تصفية الصندوق ومطابقة الجابي</h2>
-        <p>التاريخ: <span id="date"></span></p>
+    <div class="container">
+        <!-- شاشة تسجيل الدخول -->
+        <div id="loginDiv" class="login-card">
+            <div class="brand-logo-badge"><i class="fas fa-globe-americas"></i></div>
+            <h2 style="margin: 0 0 5px 0; font-size: 18px;">شركة العالمية</h2>
+            <span class="owner-badge">إدارة: الحاج بلال عبد الرزاق</span>
+            
+            <div class="login-options">
+                <button type="button" class="login-opt-btn active" id="btnM" onclick="setRole('manager')">مدير</button>
+                <button type="button" class="login-opt-btn" id="btnC" onclick="setRole('collector')">جابي</button>
+            </div>
+            
+            <div class="form-group" id="collectorSelectGroup" style="display:none;">
+                <label>اختر اسم الجابي:</label>
+                <select id="loginCollectorName">
+                    <option value="جابي 1">جابي 1</option>
+                    <option value="جابي 2">جابي 2</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <input type="password" id="pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter') login()">
+            </div>
+            <button class="btn" onclick="login()">دخول للنظام</button>
+        </div>
+
+        <!-- لوحة التحكم الداخلية -->
+        <div id="appDiv" class="card" style="display:none;">
+            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت.</div>
+            
+            <div class="app-header">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <div style="width: 35px; height: 35px; border-radius: 50%; background: var(--accent-blue); color: white; display: flex; align-items: center; justify-content: center; font-size: 14px;">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <div>
+                        <h3 style="margin:0; font-size: 15px;">شركة العالمية للشحن والحوالات</h3>
+                        <span id="roleTitle" style="font-size: 11px; color: var(--sub-text); font-weight: 600;"></span>
+                    </div>
+                </div>
+                <button class="btn-logout" onclick="logoutSystem()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+            </div>
+
+            <!-- لوحة الجابي -->
+            <div id="collectorSection" style="display:none; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                <h4 style="margin-top:0; font-size:13px; color: var(--accent-blue);"><i class="fas fa-plus-circle"></i> تسجيل حركة جديدة</h4>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                    <div class="form-group">
+                        <label>نوع الحركة:</label>
+                        <select id="type">
+                            <option value="حوالة">حوالة مالية</option>
+                            <option value="شحن">إيراد شحن</option>
+                            <option value="مصروف">مصروف (دفعة)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>اسم الزبون / السبب:</label>
+                        <input type="text" id="clientName" placeholder="التفاصيل...">
+                    </div>
+                    <div class="form-group">
+                        <label>المبلغ الأساسي ($):</label>
+                        <input type="number" step="0.01" id="amount" placeholder="المبلغ...">
+                    </div>
+                    <div class="form-group">
+                        <label>حسم / خصم ($):</label>
+                        <input type="number" step="0.01" id="discount" value="0" placeholder="الحسم...">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>صورة الوصل (اختياري):</label>
+                    <input type="file" id="receiptImage" accept="image/*" style="padding: 4px;">
+                </div>
+                <button class="btn" onclick="addData()">حفظ وإرسال للسحابة</button>
+            </div>
+
+            <!-- لوحة المدير -->
+            <div id="managerSection" style="display:none; background: #f8fafc; padding: 15px; border-radius: 12px; margin-bottom: 15px; border: 1px solid var(--border-color);">
+                <div class="manager-tabs">
+                    <button class="m-tab-btn active" onclick="switchManagerTab('tabSummary', this)"><i class="fas fa-wallet"></i> الصناديق</button>
+                    <button class="m-tab-btn" onclick="switchManagerTab('tabSettings', this)"><i class="fas fa-cogs"></i> الإعدادات</button>
+                    <button class="m-tab-btn" onclick="switchManagerTab('tabAlerts', this)"><i class="fas fa-exclamation-triangle"></i> التحذيرات</button>
+                </div>
+
+                <div id="tabSummary" class="tab-content active">
+                    <div id="collectorsSummaryContainer" class="collector-summary-box"></div>
+                    <div style="margin-top: 10px;">
+                        <label style="font-size: 11px;"><i class="fas fa-filter"></i> فلتر حسب الجابي:</label>
+                        <select id="filterCollector" onchange="filterTableByManager()" style="padding: 6px;">
+                            <option value="ALL">عرض كل الحركات</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div id="tabSettings" class="tab-content">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                        <div>
+                            <label style="font-size:11px;">إضافة جابي:</label>
+                            <input type="text" id="newCollectorName" placeholder="الاسم..." style="margin-bottom: 4px; padding: 6px;">
+                            <input type="password" id="newCollectorPass" placeholder="الباسورد..." style="margin-bottom: 4px; padding: 6px;">
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="addNewCollector()">إضافة</button>
+                        </div>
+                        <div>
+                            <label style="font-size:11px;">باسورد المدير:</label>
+                            <input type="password" id="newAdminPass" placeholder="الجديد..." style="margin-bottom: 4px; padding: 6px;">
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateAdminPassword()">تحديث</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="tabAlerts" class="tab-content">
+                    <h4 style="margin:0 0 4px 0; color:var(--danger); font-size:12px;">الحركات الملغاة:</h4>
+                    <div id="alertLog" style="font-size:11px; color:var(--sub-text);">لا توجد حالات إلغاء.</div>
+                </div>
+            </div>
+
+            <!-- جدول الحركات -->
+            <table>
+                <thead>
+                    <tr>
+                        <th>رقم الوصل</th>
+                        <th>الجابي</th>
+                        <th>المبلغ ($)</th>
+                        <th>الإجراء</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody"></tbody>
+            </table>
+        </div>
     </div>
 
-    <!-- جدول الحركات -->
-    <table>
-        <thead>
-            <tr>
-                <th>رقم الحركة</th>
-                <th>اسم الجابي</th>
-                <th>قيمة الحوالة ($)</th>
-                <th>الحالة</th>
-            </tr>
-        </thead>
-        <tbody id="movementsBody">
-            <!-- هون بتنزل حركات الجابي تلقائياً -->
-        </tbody>
-    </table>
-
-    <div class="summary">
-        <p>إجمالي مقبوضات الجابي: <span id="totalAmount">0</span> $</p>
-        <p>رصيد الصندوق الفعلي: <span id="boxBalance">0</span> $</p>
-        <p>حالة المطابقة: <span id="status">مطابق</span></p>
+    <!-- نافذة عرض سند التسوية ومشاركة الواتساب -->
+    <div id="settleModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; text-align:center;">
+        <div style="background:#fff; padding:20px; border-radius:15px; max-width:90%; width: 450px; text-align:right;">
+            <h3 style="text-align:center; color:var(--accent-blue); margin-top:0;">سند تسوية الصندوق</h3>
+            <div id="settleDetailsContent" style="font-size: 12px; margin-bottom: 15px; max-height: 50vh; overflow-y: auto;"></div>
+            <button class="btn" onclick="closeSettleModal()">إغلاق ومتابعة</button>
+        </div>
     </div>
 
-    <button class="btn-print" onclick="window.print()">تصدير إلى PDF / طباعة التقرير</button>
-</div>
+    <!-- نافذة عرض الصورة -->
+    <div id="imageModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; text-align:center;">
+        <div style="background:#fff; padding:15px; border-radius:12px; max-width:90%;">
+            <span onclick="closeModal()" style="float:left; font-size:20px; cursor:pointer; color:var(--danger);">&times;</span>
+            <h4 style="margin-top:0;">صورة الوصل</h4>
+            <img id="modalImg" src="" style="max-width:100%; max-height:60vh; border-radius:8px;">
+        </div>
+    </div>
 
-<script>
-    document.getElementById('date').innerText = new Date().toLocaleDateString('ar-EG');
-    // هون بيجي كود جلب البيانات من نظام الحسابات تبعك
-</script>
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAZDUBWhZaApdidKkJv4LsL1X...",
+            authDomain: "shipping-b300f.firebaseapp.com",
+            projectId: "shipping-b300f",
+            storageBucket: "shipping-b300f.appspot.com",
+            messagingSenderId: "838696145489",
+            appId: "1:838696145489:web:869b0f45605b4129...",
+            measurementId: "G-FTNJ8BBCMD"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        db.enablePersistence().catch((err) => {
+            console.log("وضع الأوفلاين غير مدعوم بالكامل على هذا المتصفح");
+        });
+
+        let role = "";
+        let currentCollectorLoggedIn = "";
+        let globalRecords = [];
+        let collectorsList = [{name: "جابي 1"}, {name: "جابي 2"}];
+        let unsubTrans = null;
+        let unsubCols = null;
+
+        let adminPass = localStorage.getItem("glb_admin_pass") || "admin123";
+
+        window.addEventListener('online', () => { document.getElementById('offlineBanner').style.display = 'none'; });
+        window.addEventListener('offline', () => { document.getElementById('offlineBanner').style.display = 'block'; });
+
+        function switchManagerTab(tabId, btnElement) {
+            document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.m-tab-btn').forEach(el => el.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            btnElement.classList.add('active');
+        }
+
+        function setRole(r) {
+            role = r;
+            if(r === 'manager') {
+                document.getElementById('btnM').className = 'login-opt-btn active';
+                document.getElementById('btnC').className = 'login-opt-btn';
+                document.getElementById('collectorSelectGroup').style.display = 'none';
+            } else {
+                document.getElementById('btnC').className = 'login-opt-btn active';
+                document.getElementById('btnM').className = 'login-opt-btn';
+                document.getElementById('collectorSelectGroup').style.display = 'block';
+            }
+        }
+
+        function login() {
+            let p = document.getElementById("pass").value;
+            if (role === 'manager') {
+                if (p === adminPass) {
+                    currentCollectorLoggedIn = "الحاج بلال عبد الرزاق (المدير)";
+                    startApp("مدير النظام (الحاج بلال)");
+                } else { alert("كلمة مرور المدير غير صحيحة!"); }
+            } else {
+                let selectedName = document.getElementById('loginCollectorName').value;
+                currentCollectorLoggedIn = selectedName;
+                startApp(selectedName);
+            }
+        }
+
+        function logoutSystem() {
+            if(unsubTrans) unsubTrans();
+            if(unsubCols) unsubCols();
+            role = ""; currentCollectorLoggedIn = "";
+            document.getElementById("pass").value = "";
+            document.getElementById("appDiv").style.display = "none";
+            document.getElementById("loginDiv").style.display = "block";
+            setRole('manager');
+        }
+
+        function startApp(titleName) {
+            document.getElementById("loginDiv").style.display = "none";
+            document.getElementById("appDiv").style.display = "block";
+            document.getElementById("roleTitle").innerText = titleName;
+
+            if(role === 'manager') {
+                document.getElementById("managerSection").style.display = "block";
+                document.getElementById("collectorSection").style.display = "none";
+            } else {
+                document.getElementById("managerSection").style.display = "none";
+                document.getElementById("collectorSection").style.display = "block";
+            }
+            listenToCollectors();
+            listenToDatabase();
+        }
+
+        function listenToCollectors() {
+            unsubCols = db.collection("collectors").onSnapshot((snapshot) => {
+                if(!snapshot.empty) {
+                    collectorsList = [];
+                    snapshot.forEach((doc) => { collectorsList.push({ id: doc.id, ...doc.data() }); });
+                }
+                updateCollectorsUI();
+            }, (err) => { updateCollectorsUI(); });
+        }
+
+        function updateCollectorsUI() {
+            let selectLogin = document.getElementById("loginCollectorName");
+            let filterSelect = document.getElementById("filterCollector");
+            if(!selectLogin || !filterSelect) return;
+            
+            selectLogin.innerHTML = "";
+            let currentFilterVal = filterSelect.value;
+            filterSelect.innerHTML = `<option value="ALL">عرض كل الحركات</option>`;
+
+            collectorsList.forEach(c => {
+                selectLogin.innerHTML += `<option value="${c.name}">${c.name}</option>`;
+                filterSelect.innerHTML += `<option value="${c.name}">حركات ${c.name}</option>`;
+            });
+            filterSelect.value = currentFilterVal;
+            if(role === 'manager') renderUI(globalRecords);
+        }
+
+        function addNewCollector() {
+            let name = document.getElementById("newCollectorName").value.trim();
+            let pass = document.getElementById("newCollectorPass").value.trim();
+            if(!name || !pass) { alert("أدخل الاسم والباسورد!"); return; }
+            db.collection("collectors").doc("col_" + Date.now()).set({name, pass}).then(() => {
+                document.getElementById("newCollectorName").value = "";
+                document.getElementById("newCollectorPass").value = "";
+                alert("تمت إضافة الجابي بنجاح!");
+            });
+        }
+
+        function updateAdminPassword() {
+            let newPass = document.getElementById("newAdminPass").value.trim();
+            if(!newPass) { alert("أدخل كلمة المرور الجديدة!"); return; }
+            adminPass = newPass;
+            localStorage.setItem("glb_admin_pass", newPass);
+            document.getElementById("newAdminPass").value = "";
+            alert("تم التحديث بنجاح!");
+        }
+
+        function generateReceiptCodeForCollector(collectorName, allRecords) {
+            let prefix = "X";
+            let match = collectorName.match(/\d+/);
+            if (match) {
+                let num = parseInt(match[0]);
+                prefix = String.fromCharCode(64 + num);
+            } else {
+                prefix = collectorName.charAt(0).toUpperCase();
+            }
+            let collectorRecords = allRecords.filter(r => r.collector === collectorName && r.code && r.code.startsWith(prefix + "-"));
+            return `${prefix}-${String(collectorRecords.length + 1).padStart(4, '0')}`;
+        }
+
+        function addData() {
+            let name = document.getElementById("clientName").value.trim();
+            let rawAmount = parseFloat(document.getElementById("amount").value) || 0;
+            let discountVal = parseFloat(document.getElementById("discount").value) || 0;
+            let netAmount = rawAmount - discountVal;
+            let fileInput = document.getElementById("receiptImage");
+
+            if(!name || rawAmount <= 0) { alert("الرجاء إدخال اسم الزبون ومبلغ صحيح!"); return; }
+            
+            let receiptCode = generateReceiptCodeForCollector(currentCollectorLoggedIn, globalRecords);
+            
+            let processSave = (imgDataUrl) => {
+                db.collection("shippings").add({
+                    code: receiptCode,
+                    collector: currentCollectorLoggedIn,
+                    type: document.getElementById("type").value,
+                    name: name,
+                    amount: netAmount.toFixed(2),
+                    discount: discountVal.toFixed(2),
+                    status: "مقبوض",
+                    receiptImg: imgDataUrl || "",
+                    timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+                    date: new Date().toLocaleTimeString('ar-EG', {hour: '2-digit', minute:'2-digit'})
+                }).then(() => {
+                    document.getElementById("clientName").value = "";
+                    document.getElementById("amount").value = "";
+                    document.getElementById("discount").value = "0";
+                    document.getElementById("receiptImage").value = "";
+                    alert("تم حفظ الحركة بنجاح: " + receiptCode);
+                }).catch((err) => {
+                    alert("تعذر الحفظ السحابي، تأكد من الاتصال.");
+                });
+            };
+
+            if (fileInput.files && fileInput.files[0]) {
+                let reader = new FileReader();
+                reader.onload = function(e) { processSave(e.target.result); };
+                reader.readAsDataURL(fileInput.files[0]);
+            } else {
+                processSave("");
+            }
+        }
+
+        async function settleCollector(collectorName, expectedAmount) {
+            let actualInput = prompt(`المبلغ المتوقع بصندوق (${collectorName}): $${expectedAmount.toFixed(2)}\n\nكم المبلغ الفعلي المسلم؟`);
+            if(actualInput === null) return;
+            let actualAmount = parseFloat(actualInput);
+            if(isNaN(actualAmount)) { alert("أدخل رقماً صحيحاً!"); return; }
+
+            let diff = actualAmount - expectedAmount;
+            let diffText = diff === 0 ? "مطابق تماماً ($0.00)" : (diff > 0 ? `زيادة (+$${diff.toFixed(2)})` : `عجز (-$${Math.abs(diff).toFixed(2)})`);
+
+            if(!confirm(`تسوية صندوق (${collectorName}):\n- متوقع: $${expectedAmount.toFixed(2)}\n- فعلي: $${actualAmount.toFixed(2)}\n- الحالة: ${diffText}\n\nتأكيد الاعتماد والأرشفة؟`)) return;
+
+            let activeRecords = globalRecords.filter(r => r.collector === collectorName && r.status === "مقبوض");
+            let batch = db.batch();
+            activeRecords.forEach(r => {
+                let ref = db.collection("shippings").doc(r.id);
+                batch.update(ref, { status: "مؤرشف" });
+            });
+            await batch.commit();
+
+            showSettleReportModal(collectorName, expectedAmount, actualAmount, diffText, activeRecords);
+        }
+
+        function showSettleReportModal(collectorName, expectedAmount, actualAmount, diffText, records) {
+            let content = `شركة العالمية - سند تسوية: ${collectorName}\nالتاريخ: ${new Date().toLocaleDateString()}\n-------------------\n`;
+            
+            records.forEach(r => { 
+                let disc = parseFloat(r.discount) > 0 ? ` | حسم: $${r.discount}` : '';
+                content += `[${r.code}] ${r.name} (${r.type}) : $${r.amount}${disc}\n`; 
+            });
+            
+            content += `-------------------\nالمتوقع: $${expectedAmount.toFixed(2)}\nالفعلي: $${actualAmount.toFixed(2)}\nالنتيجة: ${diffText}`;
+
+            let htmlView = content.replace(/\n/g, '<br>');
+            htmlView += `<br><br><button id="shareBtn" style="background:var(--success); color:white; border:none; padding:10px; border-radius:8px; width:100%; cursor:pointer; font-weight:bold;">
+                <i class="fas fa-share-alt"></i> مشاركة السند عبر الواتساب
+                </button>`;
+
+            document.getElementById("settleDetailsContent").innerHTML = htmlView;
+            document.getElementById("settleModal").style.display = "flex";
+
+            document.getElementById("shareBtn").onclick = () => {
+                if (navigator.share) {
+                    navigator.share({
+                        title: 'سند تسوية - شركة العالمية',
+                        text: content
+                    }).catch(err => console.log("تم إلغاء المشاركة"));
+                } else {
+                    alert("جهازك لا يدعم المشاركة المباشرة.");
+                }
+            };
+        }
+
+        function closeSettleModal() {
+            document.getElementById("settleModal").style.display = "none";
+            alert("تمت التسوية وأرشفة الصندوق بنجاح!");
+        }
+
+        function cancelRecord(docId) {
+            let reason = prompt("سبب الإلغاء:");
+            if(reason) db.collection("shippings").doc(docId).update({ status: "ملغي: " + reason });
+        }
+
+        function showReceiptModal(url) {
+            document.getElementById("modalImg").src = url;
+            document.getElementById("imageModal").style.display = "flex";
+        }
+        function closeModal() { document.getElementById("imageModal").style.display = "none"; }
+
+        function listenToDatabase() {
+            unsubTrans = db.collection("shippings").orderBy("timestamp", "desc").onSnapshot((snapshot) => {
+                globalRecords = [];
+                snapshot.forEach((doc) => { globalRecords.push({ id: doc.id, ...doc.data() }); });
+                renderUI(globalRecords);
+            }, (error) => { renderUI([]); });
+        }
+
+        function filterTableByManager() { renderUI(globalRecords); }
+
+        function renderUI(records) {
+            let tbody = document.getElementById("tableBody");
+            if(!tbody) return;
+            tbody.innerHTML = "";
+            let selectedFilter = document.getElementById("filterCollector") ? document.getElementById("filterCollector").value : "ALL";
+
+            if(role === 'manager') renderManagerSummary(records, selectedFilter);
+
+            let displayed = records;
+            if(role === 'manager' && selectedFilter !== "ALL") {
+                displayed = records.filter(r => r.collector === selectedFilter);
+            }
+
+            if(displayed.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" style="color:var(--sub-text);">لا توجد حركات مسجلة</td></tr>`;
+                return;
+            }
+
+            displayed.forEach((r) => {
+                let isCanceled = r.status && r.status.includes('ملغي');
+                let isArchived = r.status && r.status.includes('مؤرشف');
+                
+                let discountDisplay = parseFloat(r.discount) > 0 ? `<br><small style="color:var(--accent-blue);">حسم: $${r.discount}</small>` : '';
+                
+                tbody.innerHTML += `
+                    <tr>
+                        <td><span class="receipt-code">${r.code || 'GLB'}</span><br><small>${r.name}</small></td>
+                        <td><b>${r.collector}</b><br><span style="font-size:10px; color:var(--sub-text);">${r.type}</span></td>
+                        <td>$${r.amount}${discountDisplay}</td>
+                        <td>
+                            ${r.receiptImg ? `<button onclick="showReceiptModal('${r.receiptImg}')" style="background:var(--accent-blue); color:white; border:none; padding:3px 6px; border-radius:5px; cursor:pointer;"><i class="fas fa-image"></i></button>` : ''}
+                            ${role==='collector' && !isCanceled && !isArchived && r.collector === currentCollectorLoggedIn ? `
+                                <button onclick="cancelRecord('${r.id}')" class="badge-red">إلغاء</button>
+                            ` : ''}
+                        </td>
+                    </tr>`;
+            });
+        }
+
+        function renderManagerSummary(records, filterCol) {
+            let container = document.getElementById("collectorsSummaryContainer");
+            let alertLogBox = document.getElementById("alertLog");
+            if(!container) return;
+            container.innerHTML = "";
+
+            let summaryData = {};
+            collectorsList.forEach(c => { summaryData[c.name] = 0; });
+            let alertHtml = "";
+
+            records.forEach(r => {
+                let col = r.collector;
+                if(r.status && r.status.includes('ملغي')) {
+                    alertHtml += `<p style="margin:2px 0;">⚠️ ${r.code} (${col}): ${r.status}</p>`;
+                } else if(r.status === "مقبوض") {
+                    let amt = parseFloat(r.amount) || 0;
+                    if(summaryData[col] !== undefined) {
+                        if(r.type === 'مصروف') summaryData[col] -= amt;
+                        else summaryData[col] += amt;
+                    }
+                }
+            });
+
+            for(let colName in summaryData) {
+                if(filterCol !== "ALL" && filterCol !== colName) continue;
+                let balance = summaryData[colName];
+                container.innerHTML += `
+                    <div class="collector-card">
+                        <h4 style="margin:0 0 4px 0; color:var(--accent-blue); font-size:12px;">صندوق: ${colName}</h4>
+                        <p style="margin:0 0 6px 0; font-size:16px; font-weight:bold;">$${balance.toFixed(2)}</p>
+                        <button class="btn-settle" onclick="settleCollector('${colName}', ${balance})"><i class="fas fa-check-circle"></i> اعتماد التسوية وإبراء الذمة</button>
+                    </div>`;
+            }
+            if(alertLogBox) alertLogBox.innerHTML = alertHtml || "لا توجد حالات إلغاء.";
+        }
+    </script>
 </body>
 </html>
