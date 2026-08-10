@@ -68,8 +68,7 @@
             <div class="form-group" id="collectorSelectGroup" style="display:none;">
                 <label>اختر اسم الجابي:</label>
                 <select id="loginCollectorName">
-                    <option value="جابي 1">جابي 1</option>
-                    <option value="جابي 2">جابي 2</option>
+                    <!-- سيتم تعبئتها تلقائياً -->
                 </select>
             </div>
 
@@ -81,7 +80,7 @@
 
         <!-- لوحة التحكم الداخلية -->
         <div id="appDiv" class="card" style="display:none;">
-            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت.[span_1](start_span)[span_1](end_span)</div>
+            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت[span_0](start_span)[span_0](end_span).</div>
             
             <div class="app-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -147,12 +146,17 @@
                 </div>
 
                 <div id="tabSettings" class="tab-content">
-                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 8px;">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px;">
                         <div>
-                            <label style="font-size:11px;">إضافة جابي:</label>
-                            <input type="text" id="newCollectorName" placeholder="الاسم..." style="margin-bottom: 4px; padding: 6px;">
-                            <input type="password" id="newCollectorPass" placeholder="الباسورد..." style="margin-bottom: 4px; padding: 6px;">
-                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="addNewCollector()">إضافة</button>
+                            <label style="font-size:11px;">تعديل اسم وباسورد جابي:</label>
+                            <select id="targetCollectorIndex" style="margin-bottom: 4px; padding: 6px;">
+                                <option value="0">جابي 1</option>
+                                <option value="1">جابي 2</option>
+                                <option value="2">جابي 3</option>
+                            </select>
+                            <input type="text" id="newCollectorNameInput" placeholder="الاسم الجديد..." style="margin-bottom: 4px; padding: 6px;">
+                            <input type="password" id="newCollectorPassInput" placeholder="الباسورد الجديد..." style="margin-bottom: 4px; padding: 6px;">
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateCollectorInfo()">حفظ التعديل</button>
                         </div>
                         <div>
                             <label style="font-size:11px;">باسورد المدير:</label>
@@ -227,9 +231,14 @@
         let role = "";
         let currentCollectorLoggedIn = "";
         let globalRecords = [];
-        let collectorsList = [{name: "جابي 1"}, {name: "جابي 2"}];
+        
+        let collectorsList = [
+            {name: localStorage.getItem("glb_name_0") || "جابي 1", pass: localStorage.getItem("glb_pass_0") || "123"},
+            {name: localStorage.getItem("glb_name_1") || "جابي 2", pass: localStorage.getItem("glb_pass_1") || "123"},
+            {name: localStorage.getItem("glb_name_2") || "جابي 3", pass: localStorage.getItem("glb_pass_2") || "123"}
+        ];
+
         let unsubTrans = null;
-        let unsubCols = null;
         let pendingSettleCollector = "";
         let pendingRecordsToArchive = [];
 
@@ -256,6 +265,7 @@
                 document.getElementById('btnM').className = 'login-opt-btn';
                 document.getElementById('collectorSelectGroup').style.display = 'block';
             }
+            updateCollectorsUI();
         }
 
         function login() {
@@ -267,14 +277,20 @@
                 } else { alert("كلمة مرور المدير غير صحيحة!"); }
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
-                currentCollectorLoggedIn = selectedName;
-                startApp(selectedName);
+                let collectorObj = collectorsList.find(c => c.name === selectedName);
+                let correctPass = collectorObj ? collectorObj.pass : "123";
+
+                if (p === correctPass) {
+                    currentCollectorLoggedIn = selectedName;
+                    startApp(selectedName);
+                } else {
+                    alert("كلمة مرور " + selectedName + " غير صحيحة!");
+                }
             }
         }
 
         function logoutSystem() {
             if(unsubTrans) unsubTrans();
-            if(unsubCols) unsubCols();
             role = ""; currentCollectorLoggedIn = "";
             document.getElementById("pass").value = "";
             document.getElementById("appDiv").style.display = "none";
@@ -294,18 +310,8 @@
                 document.getElementById("managerSection").style.display = "none";
                 document.getElementById("collectorSection").style.display = "block";
             }
-            listenToCollectors();
+            updateCollectorsUI();
             listenToDatabase();
-        }
-
-        function listenToCollectors() {
-            unsubCols = db.collection("collectors").onSnapshot((snapshot) => {
-                if(!snapshot.empty) {
-                    collectorsList = [];
-                    snapshot.forEach((doc) => { collectorsList.push({ id: doc.id, ...doc.data() }); });
-                }
-                updateCollectorsUI();
-            }, (err) => { updateCollectorsUI(); });
         }
 
         function updateCollectorsUI() {
@@ -325,15 +331,26 @@
             if(role === 'manager') renderUI(globalRecords);
         }
 
-        function addNewCollector() {
-            let name = document.getElementById("newCollectorName").value.trim();
-            let pass = document.getElementById("newCollectorPass").value.trim();
-            if(!name || !pass) { alert("أدخل الاسم والباسورد!"); return; }
-            db.collection("collectors").doc("col_" + Date.now()).set({name, pass}).then(() => {
-                document.getElementById("newCollectorName").value = "";
-                document.getElementById("newCollectorPass").value = "";
-                alert("تمت إضافة الجابي بنجاح!");
-            });
+        function updateCollectorInfo() {
+            let index = document.getElementById("targetCollectorIndex").value;
+            let newName = document.getElementById("newCollectorNameInput").value.trim();
+            let newPass = document.getElementById("newCollectorPassInput").value.trim();
+
+            if(!newName && !newPass) { alert("الرجاء إدخال الاسم الجديد أو كلمة المرور الجديدة على الأقل!"); return; }
+
+            if(newName) {
+                collectorsList[index].name = newName;
+                localStorage.setItem("glb_name_" + index, newName);
+            }
+            if(newPass) {
+                collectorsList[index].pass = newPass;
+                localStorage.setItem("glb_pass_" + index, newPass);
+            }
+
+            document.getElementById("newCollectorNameInput").value = "";
+            document.getElementById("newCollectorPassInput").value = "";
+            updateCollectorsUI();
+            alert("تم تحديث بيانات الجابي بنجاح!");
         }
 
         function updateAdminPassword() {
@@ -342,7 +359,7 @@
             adminPass = newPass;
             localStorage.setItem("glb_admin_pass", newPass);
             document.getElementById("newAdminPass").value = "";
-            alert("تم التحديث بنجاح!");
+            alert("تم تحديث باسورد المدير بنجاح!");
         }
 
         function generateReceiptCodeForCollector(collectorName, allRecords) {
@@ -477,7 +494,6 @@
 
             if(role === 'manager') renderManagerSummary(records, selectedFilter);
 
-            // تم تعديلها لتخفي أي شيء قديم تمت تسويته وتبقي حركات "مقبوض" فقط لتبدأ على نظافة
             let displayed = records.filter(r => r.status === "مقبوض");
             
             if(role === 'manager' && selectedFilter !== "ALL") {
