@@ -80,7 +80,7 @@
 
         <!-- لوحة التحكم الداخلية -->
         <div id="appDiv" class="card" style="display:none;">
-            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت.</div>
+            <div id="offlineBanner"><i class="fas fa-exclamation-triangle"></i> تنبيه: انقطع الاتصال بالإنترنت، يتم حفظ الحركات محلياً لحين عودة النت[span_2](start_span)[span_2](end_span).</div>
             
             <div class="app-header">
                 <div style="display: flex; align-items: center; gap: 10px;">
@@ -156,12 +156,12 @@
                             </select>
                             <input type="text" id="newCollectorNameInput" placeholder="الاسم الجديد..." style="margin-bottom: 4px; padding: 6px;">
                             <input type="password" id="newCollectorPassInput" placeholder="الباسورد الجديد..." style="margin-bottom: 4px; padding: 6px;">
-                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateCollectorInfo()">حفظ التعديل</button>
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateCollectorInfo()">حفظ التعديل للكل</button>
                         </div>
                         <div>
                             <label style="font-size:11px;">باسورد المدير:</label>
                             <input type="password" id="newAdminPass" placeholder="الجديد..." style="margin-bottom: 4px; padding: 6px;">
-                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateAdminPassword()">تحديث</button>
+                            <button class="btn" style="padding: 6px; font-size: 11px;" onclick="updateAdminPassword()">تحديث باسورد المدير</button>
                         </div>
                     </div>
                 </div>
@@ -312,6 +312,7 @@
             }
             updateCollectorsUI();
             listenToDatabase();
+            loadSettingsFromCloud(); // مزامنة الإعدادات فوراً من السحابة للكل
         }
 
         function updateCollectorsUI() {
@@ -331,6 +332,7 @@
             if(role === 'manager') renderUI(globalRecords);
         }
 
+        // حفظ وتحديث بيانات الجابي ورفعها للسحابة لتتحدث عند الجميع
         function updateCollectorInfo() {
             let index = document.getElementById("targetCollectorIndex").value;
             let newName = document.getElementById("newCollectorNameInput").value.trim();
@@ -338,28 +340,55 @@
 
             if(!newName && !newPass) { alert("الرجاء إدخال الاسم الجديد أو كلمة المرور الجديدة على الأقل!"); return; }
 
-            if(newName) {
-                collectorsList[index].name = newName;
-                localStorage.setItem("glb_name_" + index, newName);
-            }
-            if(newPass) {
-                collectorsList[index].pass = newPass;
-                localStorage.setItem("glb_pass_" + index, newPass);
-            }
+            if(newName) collectorsList[index].name = newName;
+            if(newPass) collectorsList[index].pass = newPass;
 
-            document.getElementById("newCollectorNameInput").value = "";
-            document.getElementById("newCollectorPassInput").value = "";
-            updateCollectorsUI();
-            alert("تم تحديث بيانات الجابي بنجاح!");
+            let settingsData = {
+                adminPass: adminPass,
+                collectors: collectorsList
+            };
+
+            db.collection("system_settings").doc("config").set(settingsData).then(() => {
+                document.getElementById("newCollectorNameInput").value = "";
+                document.getElementById("newCollectorPassInput").value = "";
+                updateCollectorsUI();
+                alert("تم تحديث بيانات الجابي وحفظها بالسحابة بنجاح لكل الأجهزة!");
+            }).catch(err => {
+                alert("حدث خطأ أثناء حفظ الإعدادات بالسحابة.");
+            });
         }
 
+        // تحديث باسورد المدير ورفعها للسحابة
         function updateAdminPassword() {
             let newPass = document.getElementById("newAdminPass").value.trim();
             if(!newPass) { alert("أدخل كلمة المرور الجديدة!"); return; }
             adminPass = newPass;
-            localStorage.setItem("glb_admin_pass", newPass);
-            document.getElementById("newAdminPass").value = "";
-            alert("تم تحديث باسورد المدير بنجاح!");
+
+            let settingsData = {
+                adminPass: adminPass,
+                collectors: collectorsList
+            };
+
+            db.collection("system_settings").doc("config").set(settingsData).then(() => {
+                document.getElementById("newAdminPass").value = "";
+                alert("تم تحديث باسورد المدير وحفظها بالسحابة بنجاح!");
+            }).catch(err => {
+                alert("حدث خطأ أثناء حفظ الإعدادات بالسحابة.");
+            });
+        }
+
+        // سحب الإعدادات المحدثة من السحابة لتعمل عند الكل
+        function loadSettingsFromCloud() {
+            db.collection("system_settings").doc("config").get().then((doc) => {
+                if (doc.exists) {
+                    let data = doc.data();
+                    if(data.adminPass) adminPass = data.adminPass;
+                    if(data.collectors) {
+                        collectorsList = data.collectors;
+                        updateCollectorsUI();
+                    }
+                }
+            }).catch(err => { console.log("جاري استخدام الإعدادات المحلية"); });
         }
 
         function generateReceiptCodeForCollector(collectorName, allRecords) {
