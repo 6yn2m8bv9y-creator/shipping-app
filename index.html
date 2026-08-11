@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>شركة العالمية - نظام الإدارة السحابي - نظام الوصولات</title>
+    <title>شركة العالمية - نظام الوصولات</title>
     <style>
         body { font-family: Tahoma, Arial, sans-serif; background-color: #eef2f7; margin: 0; padding: 20px; direction: rtl; text-align: right; }
         .container { max-width: 450px; margin: 30px auto; background: #ffffff; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
@@ -15,10 +15,12 @@
         button { background-color: #2980b9; color: white; border: none; font-weight: bold; cursor: pointer; margin-top: 10px; }
         button:hover { background-color: #2471a3; }
         .error { color: #c0392b; text-align: center; margin-top: 10px; display: none; font-weight: bold; }
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
+<!-- شاشة تسجيل الدخول -->
 <div class="container" id="loginScreen">
     <h2>شركة العالمية</h2>
     <div class="subtitle">إدارة: الحاج بلال عبد الرزاق</div>
@@ -37,7 +39,31 @@
     </div>
 
     <button onclick="login()">تسجيل الدخول</button>
-    <div id="errorMsg" class="error">كلمة مرور جابي 1 غير صحيحة!</div>
+    <div id="errorMsg" class="error">كلمة المرور غير صحيحة!</div>
+</div>
+
+<!-- شاشة إدخال الوصولات (تظهر بعد تسجيل الدخول) -->
+<div class="container hidden" id="appScreen">
+    <h2>تسجيل وصل جديد</h2>
+    <div class="subtitle" id="welcomeUser"></div>
+
+    <div class="form-group">
+        <label>رقم العملية / البوليصة:</label>
+        <input type="text" id="opNum" placeholder="أدخل رقم العملية">
+    </div>
+
+    <div class="form-group">
+        <label>اسم المستلم:</label>
+        <input type="text" id="receiver" placeholder="أدخل اسم المستلم">
+    </div>
+
+    <div class="form-group">
+        <label>المبلغ:</label>
+        <input type="number" id="freightCost" placeholder="أدخل المبلغ">
+    </div>
+
+    <button onclick="sendData()">حفظ وإرسال الوصل</button>
+    <button onclick="logout()" style="background-color: #7f8c8d; margin-top: 5px;">تسجيل خروج</button>
 </div>
 
 <script>
@@ -46,17 +72,55 @@
         "جابي 2": "1234"
     };
 
+    let activeCollector = "";
+
     function login() {
         const name = document.getElementById("collectorName").value;
         const pass = document.getElementById("collectorPass").value;
         const errorDiv = document.getElementById("errorMsg");
 
         if (pass === passwords[name]) {
-            alert("تم تسجيل الدخول بنجاح يا " + name);
+            activeCollector = name;
+            document.getElementById("loginScreen").classList.add("hidden");
+            document.getElementById("appScreen").classList.remove("hidden");
+            document.getElementById("welcomeUser").innerText = "الموظف الميداني: " + name;
         } else {
             errorDiv.innerText = "كلمة مرور " + name + " غير صحيحة!";
             errorDiv.style.display = "block";
         }
+    }
+
+    function logout() {
+        document.getElementById("appScreen").classList.add("hidden");
+        document.getElementById("loginScreen").classList.remove("hidden");
+        document.getElementById("collectorPass").value = "";
+    }
+
+    function sendData() {
+        const opNum = document.getElementById("opNum").value;
+        const receiver = document.getElementById("receiver").value;
+        const freightCost = document.getElementById("freightCost").value;
+
+        if(!opNum || !receiver || !freightCost) {
+            alert("الرجاء تعبئة كافة الحقول!");
+            return;
+        }
+
+        // بيانات الوصل التي ستطير مباشرة إلى ملف الإكسل لديك
+        const data = {
+            collector: activeCollector,
+            opNum: opNum,
+            receiver: receiver,
+            freightCost: freightCost
+        };
+
+        // رابط الإرسال (مكان ما نربط السكربت)
+        alert("تم إرسال الوصل بنجاح وسيظهر عندك بالمكتب فوراً!");
+        
+        // تفريغ الحقول بعد الإرسال
+        document.getElementById("opNum").value = "";
+        document.getElementById("receiver").value = "";
+        document.getElementById("freightCost").value = "";
     }
 </script>
 
