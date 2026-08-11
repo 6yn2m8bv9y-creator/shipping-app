@@ -75,7 +75,7 @@
             </div>
 
             <div class="form-group">
-                <input type="password" id="pass" placeholder="كلمة المرور (افتراضي: 123)..." onkeydown="if(event.key==='Enter') login()">
+                <input type="password" id="pass" placeholder="كلمة المرور..." onkeydown="if(event.key==='Enter') login()">
             </div>
             <button class="btn" onclick="login()">دخول للنظام</button>
         </div>
@@ -215,13 +215,14 @@
         let currentCollectorLoggedIn = "";
         let globalRecords = [];
         
+        // الباسوردات المحدثة حسب طلبك
         let collectorsPasswords = {
-            "جابي 1": "123",
-            "جابي 2": "123",
-            "جابي 3": "123"
+            "جابي 1": "admin1212",
+            "جابي 2": "admin1616",
+            "جابي 3": "admin2121"
         };
 
-        let adminPass = "admin123";
+        let adminPass = "admin6161";
         let unsubTrans = null;
         let pendingSettleCollector = "";
         let pendingRecordsToArchive = [];
@@ -255,16 +256,16 @@
                 if (p === adminPass) {
                     currentCollectorLoggedIn = "الحاج بلال عبد الرزاق (المدير)";
                     startApp("مدير النظام (الحاج بلال)");
-                } else { alert("كلمة مرور المدير غير صحيحة! (الافتراضية: admin123)"); }
+                } else { alert("كلمة مرور المدير غير صحيحة!"); }
             } else {
                 let selectedName = document.getElementById('loginCollectorName').value;
-                let correctPass = collectorsPasswords[selectedName] || "123";
+                let correctPass = collectorsPasswords[selectedName] || "admin1212";
 
                 if (p === correctPass) {
                     currentCollectorLoggedIn = selectedName;
                     startApp(selectedName);
                 } else {
-                    alert("كلمة مرور " + selectedName + " غير صحيحة! (الافتراضية: 123)");
+                    alert("كلمة مرور " + selectedName + " غير صحيحة!");
                 }
             }
         }
